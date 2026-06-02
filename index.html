@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Search OBX Rentals — Outer Banks Vacation Homes</title>
+  <meta name="description" content="Search 7,500+ Outer Banks vacation rentals. Filter by beds, location, pool, oceanfront, and more. Real pricing from every major OBX property manager.">
+  <link rel="canonical" href="https://search.obx.deals/">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <style>
+    :root {
+      --ink:    #1a1a1a;
+      --muted:  #5a5a5a;
+      --rule:   #e0e0e0;
+      --accent: #1e6fa8;
+      --save:   #b04a2c;
+      --bg:     #fafaf7;
+      --card:   #ffffff;
+      --tag-bg: #edf4fb;
+      --tag-ink:#1e6fa8;
+      --radius: 8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg); color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px; line-height: 1.5;
+      height: 100%;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────────────── */
+    header {
+      background: var(--card); border-bottom: 1px solid var(--rule);
+      padding: 0.75rem 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { text-decoration: none; color: var(--ink); }
+    .logo strong { font-size: 1.1rem; letter-spacing: -0.01em; }
+    .logo span { color: var(--accent); }
+    .header-sub { color: var(--muted); font-size: 0.82rem; }
+
+    /* ── LAYOUT ─────────────────────────────────────────────────────── */
+    .shell {
+      display: grid;
+      grid-template-columns: 300px 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      height: calc(100vh - 49px);
+    }
+    .filters {
+      grid-column: 1;
+      grid-row: 1 / 3;
+      border-right: 1px solid var(--rule);
+      overflow-y: auto;
+      padding: 1rem;
+      background: var(--card);
+    }
+    .results-header {
+      grid-column: 2;
+      grid-row: 1;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--rule);
+      background: var(--bg);
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; color: var(--muted);
+    }
+    .results-list {
+      grid-column: 2;
+      grid-row: 2;
+      overflow-y: auto;
+      padding: 0.75rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .map-col {
+      grid-column: 3;
+      grid-row: 1 / 3;
+      border-left: 1px solid var(--rule);
+      position: relative;
+    }
+    #map { width: 100%; height: 100%; }
+
+    /* ── FILTERS ─────────────────────────────────────────────────────── */
+    .filter-section { margin-bottom: 1.25rem; }
+    .filter-label {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 0.4rem; display: block;
+    }
+    .filter-section select,
+    .filter-section input[type="date"],
+    .filter-section input[type="number"] {
+      width: 100%; padding: 0.4rem 0.5rem;
+      border: 1px solid var(--rule); border-radius: 4px;
+      background: var(--bg); color: var(--ink);
+      font-size: 0.9rem; appearance: auto;
+    }
+    .filter-section select:focus,
+    .filter-section input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+    .toggles { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .toggle-btn {
+      padding: 0.3rem 0.6rem; border-radius: 20px;
+      border: 1px solid var(--rule); background: var(--bg);
+      font-size: 0.8rem; cursor: pointer; user-select: none;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      color: var(--muted);
+    }
+    .toggle-btn.on {
+      background: var(--tag-bg); border-color: var(--accent);
+      color: var(--accent); font-weight: 500;
+    }
+
+    .search-btn {
+      width: 100%; padding: 0.6rem;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: var(--radius);
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .search-btn:hover { background: #1859882; filter: brightness(1.08); }
+    .search-btn:disabled { opacity: 0.6; cursor: default; }
+
+    .clear-link {
+      display: block; text-align: center; font-size: 0.8rem;
+      color: var(--muted); text-decoration: underline; cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    /* POI chips */
+    .poi-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .poi-chip {
+      padding: 0.25rem 0.5rem; border-radius: 20px;
+      border: 1px solid var(--rule); background: var(--bg);
+      font-size: 0.78rem; cursor: pointer; user-select: none;
+      color: var(--muted);
+    }
+    .poi-chip.on {
+      background: #fff8e1; border-color: #c8990a; color: #7a5c00;
+    }
+    .poi-select { margin-top: 0.4rem; }
+    .radius-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem; }
+    .radius-row input[type="range"] { flex: 1; }
+    .radius-row span { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
+    /* ── CARDS ───────────────────────────────────────────────────────── */
+    .card {
+      background: var(--card); border-radius: var(--radius);
+      border: 1px solid var(--rule);
+      display: flex; gap: 0; overflow: hidden;
+      cursor: pointer; transition: box-shadow 0.15s;
+      text-decoration: none; color: inherit;
+    }
+    .card:hover, .card.active { box-shadow: 0 2px 12px rgba(0,0,0,0.12); border-color: var(--accent); }
+    .card-img {
+      width: 100px; min-width: 100px; background: #e8e8e8;
+      object-fit: cover; align-self: stretch;
+    }
+    .card-img-placeholder {
+      width: 100px; min-width: 100px; background: #ebebeb;
+      display: flex; align-items: center; justify-content: center;
+      color: #bbb; font-size: 1.8rem;
+    }
+    .card-body { padding: 0.55rem 0.7rem; flex: 1; min-width: 0; }
+    .card-name {
+      font-weight: 600; font-size: 0.88rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .card-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+    .card-badges { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem; }
+    .badge {
+      font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 3px;
+      background: var(--tag-bg); color: var(--tag-ink);
+    }
+    .badge.deal  { background: #fef2f0; color: var(--save); }
+    .badge.fair  { background: #f0f7ee; color: #2d6e1e; }
+    .badge.above { background: #fafafa; color: var(--muted); }
+    .card-rate {
+      font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem; color: var(--ink);
+    }
+    .card-rate-note { font-size: 0.73rem; color: var(--muted); }
+    .card-location { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* ── MAP POPUP ───────────────────────────────────────────────────── */
+    .maplibregl-popup-content {
+      padding: 0.5rem 0.75rem; font-size: 0.82rem;
+      max-width: 220px; line-height: 1.4;
+    }
+    .popup-name { font-weight: 600; }
+    .popup-meta { color: var(--muted); font-size: 0.75rem; }
+    .popup-rate { font-weight: 700; color: var(--accent); margin-top: 0.2rem; }
+
+    /* ── EMPTY / LOADING ─────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 3rem 1rem; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid var(--rule); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── MOBILE ──────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .shell {
+        display: flex; flex-direction: column; height: auto;
+        overflow: visible;
+      }
+      .filters { border-right: none; border-bottom: 1px solid var(--rule); }
+      .results-header { grid-column: unset; }
+      .results-list { overflow-y: visible; padding: 0.5rem; }
+      .map-col { height: 320px; border-left: none; border-top: 1px solid var(--rule); }
+      .card-img, .card-img-placeholder { width: 80px; min-width: 80px; }
+    }
+  </style>
+</head>
+<body x-data="searchApp()" x-init="init()">
+
+  <header>
+    <a href="https://obx.deals" class="logo"><strong>OBX<span>Deals</span></strong></a>
+    <span class="header-sub">Search 7,500+ OBX vacation rentals</span>
+  </header>
+
+  <div class="shell">
+
+    <!-- ── FILTERS ─────────────────────────────────────────────────── -->
+    <aside class="filters">
+
+      <div class="filter-section">
+        <label class="filter-label">Check-in week</label>
+        <input type="date" x-model="filters.checkin" :min="todayStr">
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Bedrooms (minimum)</label>
+        <select x-model="filters.beds">
+          <option value="0">Any</option>
+          <template x-for="n in [1,2,3,4,5,6,7,8,9,10,11,12]" :key="n">
+            <option :value="n" x-text="n + '+'"></option>
+          </template>
+        </select>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Area</label>
+        <select x-model="filters.community">
+          <option value="">All OBX</option>
+          <optgroup label="Northern Beaches">
+            <option value="corolla">Corolla</option>
+            <option value="carova">Carova (4WD)</option>
+            <option value="duck">Duck</option>
+            <option value="southern_shores">Southern Shores</option>
+          </optgroup>
+          <optgroup label="Mid Beaches">
+            <option value="kitty_hawk">Kitty Hawk</option>
+            <option value="kill_devil_hills">Kill Devil Hills</option>
+            <option value="nags_head">Nags Head</option>
+            <option value="south_nags_head">South Nags Head</option>
+          </optgroup>
+          <optgroup label="Hatteras Island">
+            <option value="rodanthe">Rodanthe</option>
+            <option value="waves">Waves</option>
+            <option value="salvo">Salvo</option>
+            <option value="avon">Avon</option>
+            <option value="buxton">Buxton</option>
+            <option value="frisco">Frisco</option>
+            <option value="hatteras_village">Hatteras Village</option>
+          </optgroup>
+          <optgroup label="Ocracoke">
+            <option value="ocracoke">Ocracoke</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Max weekly rate</label>
+        <input type="number" x-model="filters.maxRate" min="0" step="500" placeholder="No limit">
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Amenities</label>
+        <div class="toggles">
+          <button class="toggle-btn" :class="filters.pool && 'on'" @click="filters.pool = !filters.pool">🏊 Pool</button>
+          <button class="toggle-btn" :class="filters.hotTub && 'on'" @click="filters.hotTub = !filters.hotTub">♨️ Hot tub</button>
+          <button class="toggle-btn" :class="filters.pets && 'on'" @click="filters.pets = !filters.pets">🐾 Pets</button>
+          <button class="toggle-btn" :class="filters.elevator && 'on'" @click="filters.elevator = !filters.elevator">🛗 Elevator</button>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">View type</label>
+        <div class="toggles">
+          <button class="toggle-btn" :class="filters.oceanfront && 'on'" @click="filters.oceanfront = !filters.oceanfront">🌊 Oceanfront</button>
+          <button class="toggle-btn" :class="filters.oceanside && 'on'" @click="filters.oceanside = !filters.oceanside">🏖️ Oceanside</button>
+          <button class="toggle-btn" :class="filters.soundfront && 'on'" @click="filters.soundfront = !filters.soundfront">⛵ Soundfront</button>
+        </div>
+      </div>
+
+      <!-- POI filter -->
+      <div class="filter-section">
+        <label class="filter-label">Near attraction</label>
+        <div class="poi-chips">
+          <template x-for="cat in poiCategories" :key="cat.key">
+            <button class="poi-chip" :class="activePoi === cat.key && 'on'"
+              @click="togglePoiCategory(cat.key)"
+              x-text="cat.icon + ' ' + cat.label"></button>
+          </template>
+        </div>
+        <template x-if="activePoi">
+          <div class="poi-select">
+            <select x-model="filters.poiId" class="filter-section select" style="width:100%;margin-top:0.35rem;padding:0.4rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.88rem;">
+              <option value="">All in category</option>
+              <template x-for="p in filteredPois" :key="p.id">
+                <option :value="p.id" x-text="p.name"></option>
+              </template>
+            </select>
+            <div class="radius-row">
+              <input type="range" x-model="filters.radiusMi" min="1" max="30" step="1">
+              <span x-text="'Within ' + filters.radiusMi + ' mi'"></span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <button class="search-btn" @click="doSearch()" :disabled="loading">
+        <span x-show="!loading">Search</span>
+        <span x-show="loading"><span class="spinner"></span></span>
+      </button>
+      <a class="clear-link" @click="resetFilters()">Clear filters</a>
+    </aside>
+
+    <!-- ── RESULTS HEADER ──────────────────────────────────────────── -->
+    <div class="results-header">
+      <template x-if="!loading && results !== null">
+        <span>
+          <strong x-text="total.toLocaleString()"></strong> properties
+          <template x-if="filters.checkin">
+            <span x-text="' · week of ' + formatDate(filters.checkin)"></span>
+          </template>
+          <span x-show="queryMs > 0" x-text="' · ' + queryMs + 'ms'"></span>
+        </span>
+      </template>
+      <template x-if="loading"><span><span class="spinner"></span> Searching…</span></template>
+      <template x-if="!loading && results === null"><span>Enter filters and search</span></template>
+    </div>
+
+    <!-- ── RESULTS LIST ────────────────────────────────────────────── -->
+    <div class="results-list" @scroll="onListScroll($event)">
+      <template x-if="results !== null && results.length === 0">
+        <div class="empty-state">
+          <div class="icon">🏖️</div>
+          <div>No results for these filters.</div>
+          <div style="margin-top:0.4rem;font-size:0.82rem">Try fewer filters or a different week.</div>
+        </div>
+      </template>
+      <template x-for="(r, i) in results || []" :key="r.property_id">
+        <a class="card" :class="activeId === r.property_id && 'active'"
+           :href="r.url" target="_blank" rel="noopener"
+           @click="trackClick(r)"
+           @mouseenter="highlightMarker(r.property_id)">
+          <template x-if="r.image_url">
+            <img class="card-img" :src="r.image_url" :alt="r.property_name" loading="lazy"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          </template>
+          <div class="card-img-placeholder" :style="r.image_url ? 'display:none' : ''">🏠</div>
+          <div class="card-body">
+            <div class="card-name" x-text="r.property_name"></div>
+            <div class="card-meta" x-text="bedsLabel(r) + ' · ' + viewLabel(r)"></div>
+            <div class="card-badges">
+              <template x-if="r.fair_price_label === 'great_deal' || r.fair_price_label === 'good_deal'">
+                <span class="badge deal">🔥 Great deal</span>
+              </template>
+              <template x-if="r.fair_price_label === 'fair_price'">
+                <span class="badge fair">✓ Fair price</span>
+              </template>
+              <template x-if="r.fair_price_label === 'above_market'">
+                <span class="badge above">Above market</span>
+              </template>
+              <template x-if="r.beachiness >= 70">
+                <span class="badge" style="background:#f0f4ff;color:#2950a8" x-text="'🌊 Beachiness ' + r.beachiness"></span>
+              </template>
+              <template x-if="r.has_pool"><span class="badge">🏊 Pool</span></template>
+              <template x-if="r.has_hot_tub"><span class="badge">♨️ Hot tub</span></template>
+              <template x-if="r.pet_friendly"><span class="badge">🐾 Pets ok</span></template>
+            </div>
+            <template x-if="r.allin_rate">
+              <div>
+                <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + '/wk'"></div>
+                <div class="card-rate-note" x-text="pmcLabel(r.pmc) + (r.market_pct ? ' · ' + Math.round(r.market_pct) + 'th pct' : '')"></div>
+              </div>
+            </template>
+            <template x-if="!r.allin_rate && r.weekly_rate">
+              <div>
+                <div class="card-rate" x-text="'$' + Math.round(r.weekly_rate).toLocaleString() + '/wk'"></div>
+                <div class="card-rate-note" x-text="pmcLabel(r.pmc) + ' (base rent)'"></div>
+              </div>
+            </template>
+            <template x-if="!r.allin_rate && !r.weekly_rate">
+              <div class="card-rate-note" style="margin-top:0.25rem">Rate on request</div>
+            </template>
+            <div class="card-location" x-text="communityLabel(r.community) + (r.gis_ft_to_ocean ? ' · ' + ftLabel(r.gis_ft_to_ocean) + ' to ocean' : '')"></div>
+          </div>
+        </a>
+      </template>
+    </div>
+
+    <!-- ── MAP ────────────────────────────────────────────────────── -->
+    <div class="map-col">
+      <div id="map"></div>
+    </div>
+
+  </div>
+
+  <!-- Alpine.js -->
+  <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <script>
+  const API = "https://search-api.obx.deals";
+  const TRACKER = "https://track.obx.deals/c";
+
+  // POI categories derived from the /pois endpoint
+  const POI_CATEGORIES = [
+    { key: "lighthouse",    icon: "🏛️",  label: "Lighthouse" },
+    { key: "beach_access",  icon: "🏖️",  label: "Beach" },
+    { key: "sound",         icon: "⛵",  label: "Sound" },
+    { key: "attraction",    icon: "🎡",  label: "Attraction" },
+    { key: "nature",        icon: "🌿",  label: "Nature" },
+    { key: "fishing",       icon: "🎣",  label: "Fishing" },
+    { key: "food",          icon: "🍽️",  label: "Food" },
+    { key: "shopping",      icon: "🛍️",  label: "Shopping" },
+  ];
+
+  const COMMUNITY_LABELS = {
+    corolla: "Corolla", carova: "Carova", duck: "Duck",
+    southern_shores: "Southern Shores", kitty_hawk: "Kitty Hawk",
+    kill_devil_hills: "Kill Devil Hills", nags_head: "Nags Head",
+    south_nags_head: "S. Nags Head", rodanthe: "Rodanthe",
+    waves: "Waves", salvo: "Salvo", avon: "Avon",
+    buxton: "Buxton", frisco: "Frisco", hatteras_village: "Hatteras Village",
+    ocracoke: "Ocracoke", kinnakeet_shores: "Kinnakeet Shores",
+    wind_over_waves: "Wind Over Waves", island_creek: "Island Creek",
+    manteo: "Manteo", powells_point: "Powell's Point",
+    ocean_sands_q: "Ocean Sands Q",
+  };
+
+  const PMC_LABELS = {
+    hatteras_realty: "Hatteras Realty", outer_banks_blue: "OBX Blue",
+    surf_or_sound: "Surf or Sound", twiddy: "Twiddy",
+    village_realty: "Village Realty", joe_lamb_jr: "Joe Lamb Jr",
+    brindley_beach: "Brindley Beach", sun_realty: "Sun Realty",
+    resort_realty: "Resort Realty", carolina_designs: "Carolina Designs",
+    midgett: "Midgett", ocracoke_island_realty: "Ocracoke Island Realty",
+    paramount: "Paramount", shoreline_obx: "Shoreline OBX",
+    evolve: "Evolve", kees: "KEES", airbnb: "Airbnb",
+    rbo: "RBO / VRBO", houfy: "Houfy", booksmart: "Booksmart",
+    beach_realty_nc: "Beach Realty NC", seaside: "Seaside",
+  };
+
+  // Next Saturday helper
+  function nextSaturday() {
+    const d = new Date();
+    const day = d.getDay(); // 0=Sun … 6=Sat
+    d.setDate(d.getDate() + ((6 - day + 7) % 7 || 7));
+    return d.toISOString().slice(0, 10);
+  }
+
+  function searchApp() {
+    return {
+      filters: {
+        checkin: nextSaturday(),
+        beds: 0,
+        community: "",
+        pool: false, hotTub: false, pets: false, elevator: false,
+        oceanfront: false, oceanside: false, soundfront: false,
+        poiId: "", radiusMi: 10,
+        maxRate: "",
+      },
+      todayStr: new Date().toISOString().slice(0, 10),
+      results: null,
+      total: 0,
+      queryMs: 0,
+      loading: false,
+      pois: [],
+      poiCategories: [],
+      activePoi: null,
+      activeId: null,
+      map: null,
+      markers: {},
+      popup: null,
+
+      init() {
+        this.loadPois();
+        this.doSearch();
+      },
+
+      async loadPois() {
+        try {
+          const r = await fetch(API + "/pois");
+          const data = await r.json();
+          this.pois = data.pois || [];
+          // Build visible categories from what's actually in the POI list
+          const seen = new Set(this.pois.map(p => p.category));
+          this.poiCategories = POI_CATEGORIES.filter(c => seen.has(c.key));
+        } catch (e) { /* non-fatal */ }
+      },
+
+      get filteredPois() {
+        if (!this.activePoi) return [];
+        return this.pois.filter(p => p.category === this.activePoi);
+      },
+
+      togglePoiCategory(key) {
+        if (this.activePoi === key) {
+          this.activePoi = null;
+          this.filters.poiId = "";
+        } else {
+          this.activePoi = key;
+          this.filters.poiId = "";
+        }
+      },
+
+      resetFilters() {
+        this.filters = {
+          checkin: nextSaturday(), beds: 0, community: "",
+          pool: false, hotTub: false, pets: false, elevator: false,
+          oceanfront: false, oceanside: false, soundfront: false,
+          poiId: "", radiusMi: 10, maxRate: "",
+        };
+        this.activePoi = null;
+      },
+
+      buildUrl() {
+        const f = this.filters;
+        const p = new URLSearchParams({ limit: 200 });
+        if (f.checkin)     p.set("checkin", f.checkin);
+        if (f.beds > 0)    p.set("beds", f.beds);
+        if (f.community)   p.set("community", f.community);
+        if (f.pool)        p.set("pool", "true");
+        if (f.hotTub)      p.set("hot_tub", "true");
+        if (f.pets)        p.set("pets", "true");
+        if (f.elevator)    p.set("elevator", "true");
+        if (f.oceanfront)  p.set("oceanfront", "true");
+        if (f.oceanside)   p.set("oceanside", "true");
+        if (f.soundfront)  p.set("soundfront", "true");
+        if (f.poiId)       p.set("poi_id", f.poiId);
+        if (f.radiusMi > 0 && f.poiId) p.set("poi_radius_mi", f.radiusMi);
+        if (f.maxRate > 0) p.set("max_rate", f.maxRate);
+        return API + "/search?" + p.toString();
+      },
+
+      async doSearch() {
+        this.loading = true;
+        try {
+          const r = await fetch(this.buildUrl());
+          const data = await r.json();
+          this.results = data.results || [];
+          this.total = data.total || 0;
+          this.queryMs = data.query_ms || 0;
+          this.$nextTick(() => this.renderMarkers());
+        } catch (e) {
+          this.results = [];
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      // ── MAP ──────────────────────────────────────────────────────────
+
+      initMap() {
+        if (this.map) return;
+        this.map = new maplibregl.Map({
+          container: "map",
+          style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+          center: [-75.85, 35.85],
+          zoom: 8.5,
+        });
+        this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        this.popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10 });
+      },
+
+      renderMarkers() {
+        this.initMap();
+        // Remove old markers
+        Object.values(this.markers).forEach(m => m.remove());
+        this.markers = {};
+        if (!this.results || this.results.length === 0) return;
+
+        const bounds = new maplibregl.LngLatBounds();
+        this.results.forEach(r => {
+          if (!r.latitude || !r.longitude) return;
+          const el = document.createElement("div");
+          el.className = "map-dot";
+          el.style.cssText = `
+            width:10px;height:10px;border-radius:50%;cursor:pointer;
+            background:${r.allin_rate ? '#1e6fa8' : '#888'};
+            border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3);
+            transition:transform 0.1s;
+          `;
+          const m = new maplibregl.Marker({ element: el })
+            .setLngLat([r.longitude, r.latitude])
+            .addTo(this.map);
+
+          el.addEventListener("mouseenter", () => {
+            el.style.transform = "scale(1.6)";
+            const html = `<div class="popup-name">${r.property_name}</div>
+              <div class="popup-meta">${this.bedsLabel(r)} · ${this.communityLabel(r.community)}</div>
+              ${r.allin_rate ? `<div class="popup-rate">$${Math.round(r.allin_rate).toLocaleString()}/wk</div>` : ''}`;
+            this.popup.setLngLat([r.longitude, r.latitude]).setHTML(html).addTo(this.map);
+            this.activeId = r.property_id;
+          });
+          el.addEventListener("mouseleave", () => {
+            el.style.transform = "";
+            this.popup.remove();
+            this.activeId = null;
+          });
+          el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.trackClick(r);
+            window.open(r.url, "_blank", "noopener");
+          });
+          this.markers[r.property_id] = m;
+          bounds.extend([r.longitude, r.latitude]);
+        });
+
+        if (!bounds.isEmpty()) {
+          this.map.fitBounds(bounds, { padding: 50, maxZoom: 13, duration: 600 });
+        }
+      },
+
+      highlightMarker(id) {
+        this.activeId = id;
+        const m = this.markers[id];
+        if (m) m.getElement().style.transform = "scale(1.6)";
+        setTimeout(() => {
+          if (this.markers[id]) this.markers[id].getElement().style.transform = "";
+        }, 800);
+      },
+
+      // ── LABELS ───────────────────────────────────────────────────────
+
+      bedsLabel(r) {
+        const beds = r.bedrooms ? r.bedrooms + "BR" : "";
+        const baths = r.bathrooms ? " / " + r.bathrooms + "BA" : "";
+        const occ = r.max_occupancy ? " · Sleeps " + r.max_occupancy : "";
+        return beds + baths + occ;
+      },
+
+      viewLabel(r) {
+        if (r.oceanfront)      return "Oceanfront";
+        if (r.semi_oceanfront) return "Semi-oceanfront";
+        if (r.oceanside)       return "Oceanside";
+        if (r.ocean_view)      return "Ocean view";
+        if (r.soundfront)      return "Soundfront";
+        if (r.soundside)       return "Soundside";
+        if (r.canalfront)      return "Canalfront";
+        return r.view_type === "unknown" ? "" : (r.view_type || "").replace(/_/g, " ");
+      },
+
+      communityLabel(c) { return COMMUNITY_LABELS[c] || (c || "").replace(/_/g, " "); },
+      pmcLabel(p) { return PMC_LABELS[p] || (p || "").replace(/_/g, " "); },
+
+      ftLabel(ft) {
+        if (ft < 100)   return Math.round(ft) + " ft";
+        if (ft < 5280)  return (ft / 100 | 0) * 100 === ft ? ft.toLocaleString() + " ft" : (Math.round(ft / 100) * 100).toLocaleString() + " ft";
+        return (ft / 5280).toFixed(1) + " mi";
+      },
+
+      formatDate(iso) {
+        if (!iso) return "";
+        const [y, m, d] = iso.split("-");
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        return months[+m - 1] + " " + +d;
+      },
+
+      // ── TRACKING ─────────────────────────────────────────────────────
+
+      trackClick(r) {
+        if (!navigator.sendBeacon) return;
+        const payload = JSON.stringify({
+          t: "click", src: "search",
+          pid: r.property_id, pmc: r.pmc,
+          url: r.url, wk: this.filters.checkin,
+          rate: r.allin_rate,
+        });
+        navigator.sendBeacon(TRACKER, new Blob([payload], { type: "application/json" }));
+      },
+
+      onListScroll() { /* future: infinite scroll */ },
+    };
+  }
+  </script>
+</body>
+</html>
