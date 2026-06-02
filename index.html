@@ -187,6 +187,17 @@
     }
     .zoom-btn:hover { color: var(--accent); border-color: var(--accent); }
 
+    /* ── MAP FALLBACK ───────────────────────────────────────────────── */
+    .map-fallback {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.85rem; text-align: center;
+      padding: 1rem; background: #f5f5f3;
+      gap: 0.5rem;
+    }
+    .map-fallback .icon { font-size: 2rem; }
+
     /* ── MAP POPUP ───────────────────────────────────────────────────── */
     .maplibregl-popup-content {
       padding: 0.5rem 0.75rem; font-size: 0.82rem;
@@ -445,6 +456,12 @@
     <!-- ── MAP ────────────────────────────────────────────────────── -->
     <div class="map-col">
       <div id="map"></div>
+      <template x-if="mapError">
+        <div class="map-fallback">
+          <div class="icon">🗺️</div>
+          <div x-text="mapError"></div>
+        </div>
+      </template>
     </div>
 
   </div>
@@ -537,6 +554,7 @@
       activePoi: null,
       activeId: null,
       map: null,
+      mapError: null,
       markers: {},
       popup: null,
 
@@ -665,19 +683,45 @@
       // ── MAP ──────────────────────────────────────────────────────────
 
       initMap() {
-        if (this.map) return;
-        this.map = new maplibregl.Map({
-          container: "map",
-          style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-          center: [-75.85, 35.85],
-          zoom: 8.5,
-        });
-        this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-        this.popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10 });
+        if (this.map || this.mapError) return;
+        if (!maplibregl.supported()) {
+          this.mapError = "Interactive map not available in this browser (WebGL required).";
+          return;
+        }
+        const container = document.getElementById("map");
+        if (!container || container.clientWidth === 0 || container.clientHeight === 0) {
+          // Layout hasn't completed yet — retry on next animation frame
+          requestAnimationFrame(() => this.initMap());
+          return;
+        }
+        try {
+          this.map = new maplibregl.Map({
+            container: "map",
+            style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+            center: [-75.85, 35.85],
+            zoom: 8.5,
+          });
+          this.map.on("error", (e) => {
+            if (!this.map._loaded) {
+              this.map.remove();
+              this.map = null;
+              this.mapError = "Map tiles failed to load. Check your connection.";
+            }
+          });
+          this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+          this.popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10 });
+        } catch (e) {
+          this.mapError = "Map could not initialize: " + (e.message || "unknown error");
+        }
       },
 
       renderMarkers() {
         this.initMap();
+        if (!this.map) return;
+        if (!this.map.isStyleLoaded()) {
+          this.map.once("load", () => this.renderMarkers());
+          return;
+        }
         // Remove old markers
         Object.values(this.markers).forEach(m => m.remove());
         this.markers = {};
