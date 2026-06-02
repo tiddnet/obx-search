@@ -180,6 +180,12 @@
     }
     .card-rate-note { font-size: 0.73rem; color: var(--muted); }
     .card-location { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+    .zoom-btn {
+      background: none; border: 1px solid var(--rule); border-radius: 4px;
+      cursor: pointer; font-size: 0.72rem; padding: 0.15rem 0.4rem;
+      color: var(--muted); margin-top: 0.35rem; display: inline-block;
+    }
+    .zoom-btn:hover { color: var(--accent); border-color: var(--accent); }
 
     /* ── MAP POPUP ───────────────────────────────────────────────────── */
     .maplibregl-popup-content {
@@ -344,6 +350,16 @@
       </template>
       <template x-if="loading"><span><span class="spinner"></span> Searching…</span></template>
       <template x-if="!loading && results === null"><span>Enter filters and search</span></template>
+      <template x-if="results && results.length > 0">
+        <select x-model="sort" @change="sortResults()" style="margin-left:auto;padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.82rem;color:var(--ink);">
+          <option value="price_asc">Price ↑</option>
+          <option value="price_desc">Price ↓</option>
+          <option value="best_value">Best Value</option>
+          <option value="beach">Beach Proximity</option>
+          <option value="beds_asc">Beds ↑</option>
+          <option value="beds_desc">Beds ↓</option>
+        </select>
+      </template>
     </div>
 
     <!-- ── RESULTS LIST ────────────────────────────────────────────── -->
@@ -379,28 +395,48 @@
                 <span class="badge above">Above market</span>
               </template>
               <template x-if="r.beachiness >= 70">
-                <span class="badge" style="background:#f0f4ff;color:#2950a8" x-text="'🌊 Beachiness ' + r.beachiness"></span>
+                <span class="badge" style="background:#f0f4ff;color:#2950a8" x-text="'🌊 ' + r.beachiness + '/100 beach'"></span>
+              </template>
+              <template x-if="isGisDisputed(r)">
+                <span class="badge" style="background:#fff3e0;color:#b45309">⚠️ View disputed</span>
+              </template>
+              <template x-if="r.dune_delta_ft > 2 && isOceanView(r)">
+                <span class="badge fair">🏖 Deck clears dune</span>
+              </template>
+              <template x-if="r.dune_delta_ft < -2 && isOceanView(r)">
+                <span class="badge" style="background:#fff3e0;color:#b45309">⚠️ Dune may obstruct</span>
               </template>
               <template x-if="r.has_pool"><span class="badge">🏊 Pool</span></template>
               <template x-if="r.has_hot_tub"><span class="badge">♨️ Hot tub</span></template>
               <template x-if="r.pet_friendly"><span class="badge">🐾 Pets ok</span></template>
+              <template x-if="r.min_stay_nights > 0">
+                <span class="badge" x-text="'⏱ ' + r.min_stay_nights + '-night min'"></span>
+              </template>
+              <template x-if="r.pmc === 'brindley_beach'">
+                <span class="badge">📅 Flex check-in</span>
+              </template>
             </div>
             <template x-if="r.allin_rate">
               <div>
                 <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + '/wk'"></div>
-                <div class="card-rate-note" x-text="pmcLabel(r.pmc) + (r.market_pct ? ' · ' + Math.round(r.market_pct) + 'th pct' : '')"></div>
+                <div class="card-rate-note" x-text="rateNote(r)"></div>
               </div>
             </template>
             <template x-if="!r.allin_rate && r.weekly_rate">
               <div>
                 <div class="card-rate" x-text="'$' + Math.round(r.weekly_rate).toLocaleString() + '/wk'"></div>
-                <div class="card-rate-note" x-text="pmcLabel(r.pmc) + ' (base rent)'"></div>
+                <div class="card-rate-note" x-text="rateNote(r)"></div>
               </div>
             </template>
-            <template x-if="!r.allin_rate && !r.weekly_rate">
-              <div class="card-rate-note" style="margin-top:0.25rem">Rate on request</div>
-            </template>
             <div class="card-location" x-text="communityLabel(r.community) + (r.gis_ft_to_ocean ? ' · ' + ftLabel(r.gis_ft_to_ocean) + ' to ocean' : '')"></div>
+            <template x-if="r.street_address">
+              <div class="card-location" x-text="'📍 ' + r.street_address"></div>
+            </template>
+            <template x-if="(r.canonical_avg_rating || r.rating) && (r.canonical_total_reviews || r.review_count)">
+              <div class="card-location" x-text="'⭐ ' + (r.canonical_avg_rating || r.rating).toFixed(1) + ' (' + (r.canonical_total_reviews || r.review_count) + ' reviews)'"></div>
+            </template>
+            <button class="zoom-btn" @click.prevent.stop="zoomTo(r)"
+              x-show="r.latitude && r.longitude" title="Zoom map to this property">📍 Map</button>
           </div>
         </a>
       </template>
@@ -421,6 +457,17 @@
   <script>
   const API = "https://search-api.obx.deals";
   const TRACKER = "https://track.obx.deals/c";
+
+  const GUEST_RATE_PMCS = new Set([
+    "hatteras_realty","outer_banks_blue","resort_realty","shoreline_obx",
+    "paramount","twiddy","carolina_designs","joe_lamb_jr","kees",
+  ]);
+  const OCEAN_VIEW_TYPES = new Set(["oceanfront","semi_oceanfront","oceanside","ocean_view"]);
+  const GIS_BAD = new Set(["INTERIOR","SLIVER_PEEKABOO"]);
+  const VIEW_SCORE = {
+    oceanfront:100, semi_oceanfront:85, oceanside:70, ocean_view:55,
+    soundfront:90,  soundside:65,      sound_view:50, canalfront:45,
+  };
 
   // POI categories derived from the /pois endpoint
   const POI_CATEGORIES = [
@@ -479,6 +526,7 @@
         poiId: "", radiusMi: 10,
         maxRate: "",
       },
+      sort: "price_asc",
       todayStr: new Date().toISOString().slice(0, 10),
       results: null,
       total: 0,
@@ -560,12 +608,58 @@
           this.results = data.results || [];
           this.total = data.total || 0;
           this.queryMs = data.query_ms || 0;
+          this.sortResults();
           this.$nextTick(() => this.renderMarkers());
         } catch (e) {
           this.results = [];
         } finally {
           this.loading = false;
         }
+      },
+
+      sortResults() {
+        if (!this.results || !this.results.length) return;
+        const rate = r => r.allin_rate || r.weekly_rate || Infinity;
+        const vscore = r => {
+          const vs = (VIEW_SCORE[r.view_type] || 30) / 100;
+          const ftb = r.gis_ft_to_ocean || r.feet_to_beach;
+          const bs = ftb ? Math.max(0, 1 - ftb / 1000) : vs * 0.7;
+          const rs = r.rating ? Math.min(r.rating / 5, 1) : 0.5;
+          const as_ = r.amenity_count ? Math.min(r.amenity_count / 20, 1) : 0.3;
+          return (0.35 * vs + 0.30 * bs + 0.20 * rs + 0.15 * as_) * 100;
+        };
+        const fns = {
+          price_asc:  (a, b) => rate(a) - rate(b),
+          price_desc: (a, b) => rate(b) - rate(a),
+          best_value: (a, b) => (vscore(b) / Math.max(rate(b), 1)) - (vscore(a) / Math.max(rate(a), 1)),
+          beach:      (a, b) => (a.gis_ft_to_ocean || a.feet_to_beach || 9999) - (b.gis_ft_to_ocean || b.feet_to_beach || 9999),
+          beds_asc:   (a, b) => (a.bedrooms || 0) - (b.bedrooms || 0),
+          beds_desc:  (a, b) => (b.bedrooms || 0) - (a.bedrooms || 0),
+        };
+        this.results = [...this.results].sort(fns[this.sort] || fns.price_asc);
+      },
+
+      zoomTo(r) {
+        if (!r.latitude || !r.longitude || !this.map) return;
+        this.map.flyTo({ center: [r.longitude, r.latitude], zoom: 15, duration: 800 });
+      },
+
+      isOceanView(r) { return OCEAN_VIEW_TYPES.has(r.view_type); },
+      isGisDisputed(r) {
+        return GIS_BAD.has(r.gis_view_classification) && OCEAN_VIEW_TYPES.has(r.view_type);
+      },
+
+      rateNote(r) {
+        const pmc = this.pmcLabel(r.pmc);
+        const pct = r.market_pct ? ` · ${Math.round(r.market_pct)}th pct` : "";
+        if (GUEST_RATE_PMCS.has(r.pmc)) return pmc + " · incl. fees" + pct;
+        const base = r.allin_rate || r.weekly_rate;
+        if (base) {
+          const lo = Math.round(base * 1.10).toLocaleString();
+          const hi = Math.round(base * 1.35).toLocaleString();
+          return `${pmc} · base rent · est. all-in $${lo}–$${hi}`;
+        }
+        return pmc;
       },
 
       // ── MAP ──────────────────────────────────────────────────────────
