@@ -671,7 +671,14 @@
 
       isOceanView(r) { return OCEAN_VIEW_TYPES.has(r.view_type); },
       isGisDisputed(r) {
-        return GIS_BAD.has(r.gis_view_classification) && OCEAN_VIEW_TYPES.has(r.view_type);
+        const gis = r.gis_view_classification;
+        const vt  = r.view_type;
+        if (!gis || !OCEAN_VIEW_TYPES.has(vt)) return false;
+        // INTERIOR disputes any ocean-side claim (location itself is wrong)
+        if (gis === "INTERIOR") return true;
+        // SLIVER_PEEKABOO only disputes explicit view quality claims, not plain "oceanside"
+        if (gis === "SLIVER_PEEKABOO") return vt === "oceanfront" || vt === "semi_oceanfront" || vt === "ocean_view";
+        return false;
       },
 
       rateNote(r) {
