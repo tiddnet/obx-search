@@ -598,7 +598,10 @@
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
   <script>
-  const API = "https://search-api.obx.deals";
+  const STAGING_API = "https://zmik5zjwhdifa4xmdoh5k4pwou0ztqmq.lambda-url.us-east-1.on.aws";
+  const API = new URLSearchParams(location.search).get("env") === "staging"
+    ? STAGING_API
+    : "https://search-api.obx.deals";
   const TRACKER = "https://track.obx.deals/c";
 
   const GUEST_RATE_PMCS = new Set([
