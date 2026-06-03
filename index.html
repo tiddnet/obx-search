@@ -653,12 +653,17 @@
     beach_realty_nc: "Beach Realty NC", seaside: "Seaside",
   };
 
-  // Next Saturday helper
+  // Next Saturday helper — use local date parts to avoid UTC-offset shift
+  function localDateStr(d) {
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mm}-${dd}`;
+  }
   function nextSaturday() {
     const d = new Date();
     const day = d.getDay(); // 0=Sun … 6=Sat
     d.setDate(d.getDate() + ((6 - day + 7) % 7 || 7));
-    return d.toISOString().slice(0, 10);
+    return localDateStr(d);
   }
 
   function searchApp() {
@@ -675,7 +680,7 @@
         saveThreshold: 300,
       },
       sort: "price_asc",
-      todayStr: new Date().toISOString().slice(0, 10),
+      todayStr: localDateStr(new Date()),
       results: null,
       total: 0,
       queryMs: 0,
