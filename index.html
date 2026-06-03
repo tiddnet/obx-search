@@ -553,6 +553,9 @@
             <template x-if="stayNights > 7 && r.total_rate">
               <div class="card-rate-note" x-text="'$' + Math.round(r.total_rate).toLocaleString() + ' total · ' + stayNights + ' nights'"></div>
             </template>
+            <template x-if="r.estimated_total">
+              <div class="card-rate-note" x-text="'~$' + r.estimated_total.toLocaleString() + ' est. · ' + stayNights + ' nights'"></div>
+            </template>
             <div class="card-location" x-text="communityLabel(r.community) + (r.gis_ft_to_ocean ? ' · ' + ftLabel(r.gis_ft_to_ocean) + ' to ocean' : '')"></div>
             <template x-if="r.street_address">
               <div class="card-location" x-text="'📍 ' + r.street_address"></div>
