@@ -285,24 +285,24 @@
     <aside class="filters">
 
       <div class="filter-section">
-        <label class="filter-label">Check-in week</label>
-        <input type="date" x-model="filters.checkin" :min="todayStr">
+        <label class="filter-label">Check-in</label>
+        <input type="date" x-model="filters.checkin" :min="todayStr"
+          @change="if (!filters.checkout || filters.checkout <= filters.checkin) filters.checkout = addDays(filters.checkin, 7)">
       </div>
 
       <div class="filter-section">
-        <label class="filter-label">Duration</label>
-        <select x-model.number="filters.weeks">
-          <option value="1">1 week</option>
-          <option value="2">2 weeks</option>
-        </select>
+        <label class="filter-label">
+          Check-out
+          <span x-text="'· ' + stayNights + ' night' + (stayNights !== 1 ? 's' : '')"
+                style="font-weight:400;opacity:0.65;margin-left:0.35rem;font-size:0.85em"></span>
+        </label>
+        <input type="date" x-model="filters.checkout" :min="checkoutMinStr">
       </div>
 
-      <template x-if="filters.weeks === 2">
-        <div class="filter-section">
-          <label class="filter-label">Show split stays saving more than</label>
-          <input type="number" x-model.number="filters.saveThreshold" min="0" step="50" placeholder="300">
-        </div>
-      </template>
+      <div class="filter-section" x-show="stayNights >= 14">
+        <label class="filter-label">Show split stays saving more than</label>
+        <input type="number" x-model.number="filters.saveThreshold" min="0" step="50" placeholder="300">
+      </div>
 
       <div class="filter-section">
         <label class="filter-label">Bedrooms (minimum)</label>
@@ -406,24 +406,13 @@
     <div class="results-header">
       <template x-if="!loading && results !== null">
         <span>
-          <template x-if="filters.weeks === 1">
-            <span>
-              <strong x-text="total.toLocaleString()"></strong> properties
-              <template x-if="filters.checkin">
-                <span x-text="' · week of ' + formatDate(filters.checkin)"></span>
-              </template>
-            </span>
+          <strong x-text="total.toLocaleString()"></strong>
+          <span x-text="stayNights > 7 ? ' available all weeks' : ' properties'"></span>
+          <template x-if="splitPairs && splitPairs.length > 0">
+            <span x-text="' · ' + splitPairs.length + ' split-stay option' + (splitPairs.length > 1 ? 's' : '')"></span>
           </template>
-          <template x-if="filters.weeks === 2">
-            <span>
-              <strong x-text="(bothWeeks ? bothWeeks.length : 0)"></strong> available both weeks
-              <template x-if="splitPairs && splitPairs.length > 0">
-                <span x-text="' · ' + splitPairs.length + ' split-stay options'"></span>
-              </template>
-              <template x-if="filters.checkin">
-                <span x-text="' · ' + formatDate(filters.checkin) + '–' + formatDate(week2DateStr())"></span>
-              </template>
-            </span>
+          <template x-if="filters.checkin">
+            <span x-text="' · ' + formatDate(filters.checkin) + (filters.checkout ? '–' + formatDate(filters.checkout) : '') + ' · ' + stayNights + 'n'"></span>
           </template>
           <span x-show="queryMs > 0" x-text="' · ' + queryMs + 'ms'"></span>
         </span>
@@ -448,7 +437,7 @@
         <div class="empty-state">
           <div class="icon">🏖️</div>
           <div>No results for these filters.</div>
-          <div style="margin-top:0.4rem;font-size:0.82rem">Try fewer filters or a different week.</div>
+          <div style="margin-top:0.4rem;font-size:0.82rem">Try fewer filters or different dates.</div>
         </div>
       </template>
       <template x-for="(r, i) in results || []" :key="r.property_id">
@@ -515,8 +504,8 @@
                 <div class="card-rate-note" x-text="rateNote(r)"></div>
               </div>
             </template>
-            <template x-if="filters.weeks === 2 && r.week2_rate">
-              <div class="card-rate-note" x-text="'Wk 1 $' + Math.round(r.allin_rate || r.weekly_rate || 0).toLocaleString() + ' + Wk 2 $' + Math.round(r.week2_rate).toLocaleString() + ' = $' + Math.round(r.total_rate).toLocaleString() + ' total'"></div>
+            <template x-if="stayNights > 7 && r.total_rate">
+              <div class="card-rate-note" x-text="'$' + Math.round(r.total_rate).toLocaleString() + ' total · ' + stayNights + ' nights'"></div>
             </template>
             <div class="card-location" x-text="communityLabel(r.community) + (r.gis_ft_to_ocean ? ' · ' + ftLabel(r.gis_ft_to_ocean) + ' to ocean' : '')"></div>
             <template x-if="r.street_address">
@@ -531,8 +520,8 @@
         </a>
       </template>
 
-      <!-- ── SPLIT-STAY PAIRS (2-week mode) ──────────────────────── -->
-      <template x-if="filters.weeks === 2 && splitPairs && splitPairs.length > 0">
+      <!-- ── SPLIT-STAY PAIRS ──────────────────────────────────── -->
+      <template x-if="stayNights >= 14 && splitPairs && splitPairs.length > 0">
         <div style="display:contents">
           <div class="results-section-label" x-text="splitPairs.length + ' split-stay option' + (splitPairs.length > 1 ? 's' : '')"></div>
           <template x-for="(pair, i) in splitPairs" :key="'pair-' + i">
@@ -549,7 +538,7 @@
               </div>
               <div class="card-pair-weeks">
                 <a class="card-week" :href="pair.week1.url" target="_blank" rel="noopener" @click.stop="trackClick(pair.week1)">
-                  <div class="card-week-label" x-text="'Week 1 · ' + formatDate(filters.checkin)"></div>
+                  <div class="card-week-label" x-text="'Week 1 · ' + formatDate(weekDate(0))"></div>
                   <div style="display:flex;overflow:hidden;">
                     <img style="width:72px;min-width:72px;object-fit:cover;align-self:stretch;"
                          :src="pair.week1.image_url" loading="lazy" onerror="this.style.display='none'">
@@ -561,7 +550,7 @@
                   </div>
                 </a>
                 <a class="card-week" :href="pair.week2.url" target="_blank" rel="noopener" @click.stop="trackClick(pair.week2)">
-                  <div class="card-week-label" x-text="'Week 2 · ' + formatDate(week2DateStr())"></div>
+                  <div class="card-week-label" x-text="'Week 2 · ' + formatDate(weekDate(1))"></div>
                   <div style="display:flex;overflow:hidden;">
                     <img style="width:72px;min-width:72px;object-fit:cover;align-self:stretch;"
                          :src="pair.week2.image_url" loading="lazy" onerror="this.style.display='none'">
@@ -653,7 +642,7 @@
     beach_realty_nc: "Beach Realty NC", seaside: "Seaside",
   };
 
-  // Next Saturday helper — use local date parts to avoid UTC-offset shift
+  // Date helpers — always use local date parts to avoid UTC-offset shift
   function localDateStr(d) {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
@@ -665,22 +654,38 @@
     d.setDate(d.getDate() + ((6 - day + 7) % 7 || 7));
     return localDateStr(d);
   }
+  function addDays(dateStr, n) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return localDateStr(d);
+  }
 
   function searchApp() {
     return {
       filters: {
         checkin: nextSaturday(),
+        checkout: addDays(nextSaturday(), 7),
         beds: 0,
         community: "",
         pool: false, hotTub: false, pets: false, elevator: false,
         oceanfront: false, oceanside: false, soundfront: false,
         poiId: "", radiusMi: 10,
         maxRate: "",
-        weeks: 1,
         saveThreshold: 300,
       },
       sort: "price_asc",
       todayStr: localDateStr(new Date()),
+      get stayNights() {
+        if (!this.filters.checkin || !this.filters.checkout) return 7;
+        const n = Math.round(
+          (new Date(this.filters.checkout + "T00:00:00") -
+           new Date(this.filters.checkin  + "T00:00:00")) / 86400000
+        );
+        return n > 0 ? n : 7;
+      },
+      get checkoutMinStr() {
+        return this.filters.checkin ? addDays(this.filters.checkin, 1) : this.todayStr;
+      },
       results: null,
       total: 0,
       queryMs: 0,
@@ -729,26 +734,25 @@
       },
 
       resetFilters() {
+        const sat = nextSaturday();
         this.filters = {
-          checkin: nextSaturday(), beds: 0, community: "",
+          checkin: sat, checkout: addDays(sat, 7),
+          beds: 0, community: "",
           pool: false, hotTub: false, pets: false, elevator: false,
           oceanfront: false, oceanside: false, soundfront: false,
           poiId: "", radiusMi: 10, maxRate: "",
-          weeks: 1, saveThreshold: 300,
+          saveThreshold: 300,
         };
         this.activePoi = null;
         this.splitPairs = null;
         this.bothWeeks = null;
       },
 
-      addWeeks(dateStr, n) {
-        const d = new Date(dateStr + "T00:00:00");
+      // Returns the check-in date for split-stay week N (0 = first week)
+      weekDate(n) {
+        const d = new Date(this.filters.checkin + "T00:00:00");
         d.setDate(d.getDate() + n * 7);
-        return d.toISOString().slice(0, 10);
-      },
-
-      week2DateStr() {
-        return this.filters.checkin ? this.addWeeks(this.filters.checkin, 1) : "";
+        return localDateStr(d);
       },
 
       buildUrl(checkinOverride) {
@@ -775,22 +779,33 @@
         this.loading = true;
         this.splitPairs = null;
         this.bothWeeks = null;
+        const nights = this.stayNights;
         try {
-          if (this.filters.weeks === 1) {
-            const r = await fetch(this.buildUrl());
+          // Build list of week-boundary check-in dates within the stay
+          const checkins = [];
+          let d = new Date(this.filters.checkin + "T00:00:00");
+          const checkout = new Date((this.filters.checkout || addDays(this.filters.checkin, 7)) + "T00:00:00");
+          while (d < checkout) {
+            checkins.push(localDateStr(d));
+            d.setDate(d.getDate() + 7);
+          }
+          if (checkins.length === 0) checkins.push(this.filters.checkin);
+
+          if (checkins.length === 1) {
+            const r = await fetch(this.buildUrl(checkins[0]));
             const data = await r.json();
-            this.results = data.results || [];
-            this.total = data.total || 0;
+            // Client-side min_stay gate: hide properties that can't cover the stay
+            const raw = data.results || [];
+            this.results = raw.filter(r => !r.min_stay_nights || r.min_stay_nights <= nights);
+            this.total = this.results.length;
             this.queryMs = data.query_ms || 0;
             this.sortResults();
           } else {
-            const wk2 = this.week2DateStr();
-            const [d1, d2] = await Promise.all([
-              fetch(this.buildUrl(this.filters.checkin)).then(r => r.json()),
-              fetch(this.buildUrl(wk2)).then(r => r.json()),
-            ]);
-            this.queryMs = Math.max(d1.query_ms || 0, d2.query_ms || 0);
-            this.compute2WeekResults(d1.results || [], d2.results || []);
+            const responses = await Promise.all(
+              checkins.map(c => fetch(this.buildUrl(c)).then(r => r.json()))
+            );
+            this.queryMs = Math.max(...responses.map(d => d.query_ms || 0));
+            this.computeMultiWeekResults(responses.map(d => d.results || []), nights);
           }
           this.$nextTick(() => this.renderMarkers());
         } catch (e) {
@@ -800,45 +815,58 @@
         }
       },
 
-      compute2WeekResults(wk1, wk2) {
+      computeMultiWeekResults(weekResults, nights) {
         const rate = r => r.allin_rate || r.weekly_rate || 0;
-        const wk2Map = new Map(wk2.map(r => [r.property_id, r]));
 
-        // Properties available both weeks
-        const both = [];
-        for (const r of wk1) {
-          const r2 = wk2Map.get(r.property_id);
-          if (r2) {
-            both.push({ ...r, week2_rate: rate(r2), total_rate: rate(r) + rate(r2) });
+        // Build a lookup map per week
+        const maps = weekResults.map(wk => new Map(wk.map(r => [r.property_id, r])));
+
+        // Intersect: property must be available all weeks AND satisfy min_stay on week 1
+        const combined = [];
+        for (const r of weekResults[0]) {
+          if (r.min_stay_nights && r.min_stay_nights > nights) continue;
+          let available = true;
+          let totalRate = rate(r);
+          for (let i = 1; i < maps.length; i++) {
+            const rN = maps[i].get(r.property_id);
+            if (!rN) { available = false; break; }
+            totalRate += rate(rN);
           }
+          if (available) combined.push({ ...r, total_rate: totalRate });
         }
-        both.sort((a, b) => a.total_rate - b.total_rate);
-        this.results = both;
-        this.total = both.length;
-        this.bothWeeks = both;
+        combined.sort((a, b) => a.total_rate - b.total_rate);
+        this.results = combined;
+        this.total = combined.length;
+        this.bothWeeks = combined;
 
-        // Split pairs: top 8 cheapest each week, different properties
-        const bestSingleTotal = both.length > 0 ? both[0].total_rate : Infinity;
-        const top1 = [...wk1].sort((a, b) => rate(a) - rate(b)).slice(0, 8);
-        const top2 = [...wk2].sort((a, b) => rate(a) - rate(b)).slice(0, 8);
-        const pairs = [];
-        for (const r1 of top1) {
-          for (const r2 of top2) {
-            if (r1.property_id === r2.property_id) continue;
-            const total = rate(r1) + rate(r2);
-            const savings = bestSingleTotal - total;
-            if (savings >= (this.filters.saveThreshold || 0)) {
-              pairs.push({ week1: r1, week2: r2, total, savings });
+        // Split-stay pairs: meaningful only for stays >= 14 nights
+        // Use week 1 vs week 2 (first two week boundaries)
+        if (nights >= 14 && weekResults.length >= 2) {
+          const wk1 = weekResults[0], wk2 = weekResults[1];
+          const bestSingleTotal = combined.length > 0 ? combined[0].total_rate : Infinity;
+          const top1 = [...wk1].sort((a, b) => rate(a) - rate(b)).slice(0, 8);
+          const top2 = [...wk2].sort((a, b) => rate(a) - rate(b)).slice(0, 8);
+          const pairs = [];
+          for (const r1 of top1) {
+            for (const r2 of top2) {
+              if (r1.property_id === r2.property_id) continue;
+              const total = rate(r1) + rate(r2);
+              const savings = bestSingleTotal - total;
+              if (savings >= (this.filters.saveThreshold || 0)) {
+                pairs.push({ week1: r1, week2: r2, total, savings });
+              }
             }
           }
+          pairs.sort((a, b) => b.savings - a.savings);
+          this.splitPairs = pairs.slice(0, 5);
+        } else {
+          this.splitPairs = null;
         }
-        pairs.sort((a, b) => b.savings - a.savings);
-        this.splitPairs = pairs.slice(0, 5);
       },
 
       sortResults() {
         if (!this.results || !this.results.length) return;
-        const rate = r => (this.filters.weeks === 2 ? r.total_rate : null) || r.allin_rate || r.weekly_rate || Infinity;
+        const rate = r => (this.stayNights > 7 ? r.total_rate : null) || r.allin_rate || r.weekly_rate || Infinity;
         const vscore = r => {
           const vs = (VIEW_SCORE[r.view_type] || 30) / 100;
           const ftb = r.gis_ft_to_ocean || r.feet_to_beach;
@@ -980,9 +1008,9 @@
         Object.values(this.markers).forEach(m => m.remove());
         this.markers = {};
 
-        // In 2-week mode, also pin split-pair-only properties (grayed)
+        // For multi-week stays, also pin split-pair-only properties (grayed)
         let allProps = [...(this.results || [])];
-        if (this.filters.weeks === 2 && this.splitPairs) {
+        if (this.stayNights >= 14 && this.splitPairs) {
           const seen = new Set(allProps.map(r => r.property_id));
           for (const pair of this.splitPairs) {
             for (const r of [pair.week1, pair.week2]) {
