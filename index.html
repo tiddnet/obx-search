@@ -397,34 +397,41 @@
             <div class="card-meta" x-text="bedsLabel(r) + ' · ' + viewLabel(r)"></div>
             <div class="card-badges">
               <template x-if="r.fair_price_label === 'great_deal' || r.fair_price_label === 'good_deal'">
-                <span class="badge deal">🔥 Great deal</span>
+                <span class="badge deal" title="Priced meaningfully below comparable properties this week — strong value relative to the market">🔥 Great deal</span>
               </template>
               <template x-if="r.fair_price_label === 'fair_price'">
-                <span class="badge fair">✓ Fair price</span>
+                <span class="badge fair" title="Priced in line with comparable properties this week">✓ Fair price</span>
               </template>
               <template x-if="r.fair_price_label === 'above_market'">
-                <span class="badge above">Above market</span>
+                <span class="badge above" title="Priced above comparable properties this week">Above market</span>
               </template>
               <template x-if="r.beachiness >= 70">
-                <span class="badge" style="background:#f0f4ff;color:#2950a8" x-text="'🌊 ' + r.beachiness + '/100 beach'"></span>
+                <span class="badge" style="background:#f0f4ff;color:#2950a8"
+                  :title="'Beachiness ' + r.beachiness + '/100 — composite score combining distance to ocean, view type, and dune height. 100 = oceanfront with unobstructed sightlines.'"
+                  x-text="'🌊 ' + r.beachiness + '/100 beach'"></span>
               </template>
               <template x-if="isGisDisputed(r)">
-                <span class="badge" style="background:#fff3e0;color:#b45309">⚠️ View disputed</span>
+                <span class="badge" style="background:#fff3e0;color:#b45309"
+                  title="GIS sight-line analysis disputes this PM's ocean view classification. Building positions or terrain suggest the view may be partially or fully blocked.">⚠️ View disputed</span>
               </template>
               <template x-if="r.dune_delta_ft > 2 && isOceanView(r)">
-                <span class="badge fair">🏖 Deck clears dune</span>
+                <span class="badge fair"
+                  :title="'Deck height exceeds foredune crest by ~' + Math.round(r.dune_delta_ft) + ' ft — upper-deck ocean views are likely unobstructed despite beach distance'">🏖 Deck clears dune</span>
               </template>
               <template x-if="r.dune_delta_ft < -2 && isOceanView(r)">
-                <span class="badge" style="background:#fff3e0;color:#b45309">⚠️ Dune may obstruct</span>
+                <span class="badge" style="background:#fff3e0;color:#b45309"
+                  :title="'Foredune crest is ~' + Math.round(Math.abs(r.dune_delta_ft)) + ' ft above deck level — ocean view from lower floors may be obstructed'">⚠️ Dune may obstruct</span>
               </template>
-              <template x-if="r.has_pool"><span class="badge">🏊 Pool</span></template>
-              <template x-if="r.has_hot_tub"><span class="badge">♨️ Hot tub</span></template>
-              <template x-if="r.pet_friendly"><span class="badge">🐾 Pets ok</span></template>
+              <template x-if="r.has_pool"><span class="badge" title="Property has a pool">🏊 Pool</span></template>
+              <template x-if="r.has_hot_tub"><span class="badge" title="Property has a hot tub">♨️ Hot tub</span></template>
+              <template x-if="r.pet_friendly"><span class="badge" title="Pets allowed — confirm breed/size restrictions with the property manager">🐾 Pets ok</span></template>
               <template x-if="r.min_stay_nights > 0">
-                <span class="badge" x-text="'⏱ ' + r.min_stay_nights + '-night min'"></span>
+                <span class="badge"
+                  :title="'Minimum stay of ' + r.min_stay_nights + ' nights required — shorter stays may not be bookable for this week'"
+                  x-text="'⏱ ' + r.min_stay_nights + '-night min'"></span>
               </template>
               <template x-if="r.pmc === 'brindley_beach'">
-                <span class="badge">📅 Flex check-in</span>
+                <span class="badge" title="Brindley Beach properties allow flexible check-in days — not restricted to Saturday arrivals">📅 Flex check-in</span>
               </template>
             </div>
             <template x-if="r.allin_rate">
