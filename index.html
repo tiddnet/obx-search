@@ -7,6 +7,7 @@
   <meta name="description" content="Search 7,500+ Outer Banks vacation rentals. Filter by beds, location, pool, oceanfront, and more. Real pricing from every major OBX property manager.">
   <link rel="canonical" href="https://search.obx.deals/">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
   <style>
     :root {
       --ink:    #1a1a1a;
@@ -270,6 +271,31 @@
       .map-col { height: 320px; border-left: none; border-top: 1px solid var(--rule); }
       .card-img, .card-img-placeholder { width: 80px; min-width: 80px; }
     }
+    /* ── Flatpickr overrides ───────────────────────────────────────────── */
+    .filter-section .flatpickr-input {
+      width: 100%; padding: 0.4rem 0.5rem;
+      border: 1px solid var(--rule); border-radius: 4px;
+      background: var(--bg); color: var(--ink);
+      font-size: 0.9rem; cursor: pointer;
+    }
+    .filter-section .flatpickr-input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .flatpickr-day.selected,
+    .flatpickr-day.startRange, .flatpickr-day.startRange:hover,
+    .flatpickr-day.endRange,   .flatpickr-day.endRange:hover {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+    }
+    .flatpickr-day.inRange {
+      background: var(--tag-bg); border-color: var(--tag-bg);
+      box-shadow: -5px 0 0 var(--tag-bg), 5px 0 0 var(--tag-bg);
+      color: var(--ink);
+    }
+    .flatpickr-day:hover:not(.selected):not(.startRange):not(.endRange) {
+      background: var(--tag-bg); border-color: var(--accent);
+    }
+    .flatpickr-months .flatpickr-month,
+    .flatpickr-current-month,
+    .flatpickr-weekdays { background: transparent; }
+    .flatpickr-calendar { font-family: inherit; font-size: 0.88rem; border-color: var(--rule); }
   </style>
 </head>
 <body x-data="searchApp()" x-init="init()">
@@ -285,18 +311,12 @@
     <aside class="filters">
 
       <div class="filter-section">
-        <label class="filter-label">Check-in</label>
-        <input type="date" x-model="filters.checkin" :min="todayStr"
-          @change="if (!filters.checkout || filters.checkout <= filters.checkin) filters.checkout = addDays(filters.checkin, 7)">
-      </div>
-
-      <div class="filter-section">
         <label class="filter-label">
-          Check-out
+          Dates
           <span x-text="'· ' + stayNights + ' night' + (stayNights !== 1 ? 's' : '')"
                 style="font-weight:400;opacity:0.65;margin-left:0.35rem;font-size:0.85em"></span>
         </label>
-        <input type="date" x-model="filters.checkout" :min="checkoutMinStr">
+        <input id="fp-date-range" type="text" readonly placeholder="Select dates">
       </div>
 
       <div class="filter-section" x-show="stayNights >= 14">
@@ -581,6 +601,8 @@
 
   </div>
 
+  <!-- Flatpickr date range picker -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
   <!-- Alpine.js -->
   <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
   <!-- MapLibre GL JS -->
@@ -683,9 +705,6 @@
         );
         return n > 0 ? n : 7;
       },
-      get checkoutMinStr() {
-        return this.filters.checkin ? addDays(this.filters.checkin, 1) : this.todayStr;
-      },
       results: null,
       total: 0,
       queryMs: 0,
@@ -705,6 +724,21 @@
       init() {
         this.loadPois();
         this.doSearch();
+        this._fp = flatpickr("#fp-date-range", {
+          mode: "range",
+          minDate: "today",
+          dateFormat: "M j",
+          defaultDate: [this.filters.checkin, this.filters.checkout],
+          onClose: (dates) => {
+            if (dates.length === 2) {
+              this.filters.checkin  = localDateStr(dates[0]);
+              this.filters.checkout = localDateStr(dates[1]);
+            } else {
+              // User dismissed without completing range — restore confirmed selection
+              this._fp.setDate([this.filters.checkin, this.filters.checkout], false);
+            }
+          },
+        });
       },
 
       async loadPois() {
@@ -746,6 +780,7 @@
         this.activePoi = null;
         this.splitPairs = null;
         this.bothWeeks = null;
+        this._fp?.setDate([sat, addDays(sat, 7)], false);
       },
 
       // Returns the check-in date for split-stay week N (0 = first week)
