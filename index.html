@@ -480,11 +480,11 @@
                 <span class="badge" style="background:#fff3e0;color:#b45309"
                   title="GIS sight-line analysis disputes this PM's ocean view classification. Building positions or terrain suggest the view may be partially or fully blocked.">⚠️ View disputed</span>
               </template>
-              <template x-if="r.dune_delta_ft > 2 && isOceanView(r)">
+              <template x-if="r.dune_delta_ft > 2 && isViewClaim(r)">
                 <span class="badge fair"
                   :title="'Deck height exceeds foredune crest by ~' + Math.round(r.dune_delta_ft) + ' ft — upper-deck ocean views are likely unobstructed despite beach distance'">🏖 Deck clears dune</span>
               </template>
-              <template x-if="r.dune_delta_ft < -2 && isOceanView(r)">
+              <template x-if="r.dune_delta_ft < -2 && isViewClaim(r)">
                 <span class="badge" style="background:#fff3e0;color:#b45309"
                   :title="'Foredune crest is ~' + Math.round(Math.abs(r.dune_delta_ft)) + ' ft above deck level — ocean view from lower floors may be obstructed'">⚠️ Dune may obstruct</span>
               </template>
@@ -866,6 +866,10 @@
       },
 
       isOceanView(r) { return OCEAN_VIEW_TYPES.has(r.view_type); },
+      isViewClaim(r) {
+        // Explicit view quality claim — not just road-position "oceanside"
+        return r.view_type === "oceanfront" || r.view_type === "semi_oceanfront" || r.view_type === "ocean_view";
+      },
       isGisDisputed(r) {
         const gis = r.gis_view_classification;
         const vt  = r.view_type;
