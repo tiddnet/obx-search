@@ -252,6 +252,12 @@
       text-align: center; padding: 3rem 1rem; color: var(--muted);
     }
     .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .nudge-btn {
+      display: inline-block; margin-top: 0.75rem; padding: 0.4rem 1rem;
+      background: var(--accent); color: #fff; border-radius: 6px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none;
+    }
+    .nudge-btn:hover { opacity: 0.88; }
     .spinner {
       display: inline-block; width: 18px; height: 18px;
       border: 2px solid var(--rule); border-top-color: var(--accent);
@@ -464,7 +470,20 @@
         <div class="empty-state">
           <div class="icon">🏖️</div>
           <div>No results for these filters.</div>
-          <div style="margin-top:0.4rem;font-size:0.82rem">Try fewer filters or different dates.</div>
+          <template x-if="turnDaySuggestion">
+            <div>
+              <div style="margin-top:0.4rem;font-size:0.82rem">
+                Most OBX properties check in Saturday.
+              </div>
+              <button class="nudge-btn"
+                @click="filters.checkin = turnDaySuggestion.checkin; doSearch()"
+                x-text="'Try ' + formatDate(turnDaySuggestion.checkin) + ' · ' + turnDaySuggestion.count + ' available'">
+              </button>
+            </div>
+          </template>
+          <template x-if="!turnDaySuggestion">
+            <div style="margin-top:0.4rem;font-size:0.82rem">Try fewer filters or different dates.</div>
+          </template>
         </div>
       </template>
       <template x-for="(r, i) in results || []" :key="r.property_id">
@@ -688,7 +707,6 @@
     d.setDate(d.getDate() + n);
     return localDateStr(d);
   }
-
   function searchApp() {
     return {
       filters: {
@@ -718,6 +736,7 @@
       loading: false,
       splitPairs: null,
       bothWeeks: null,
+      turnDaySuggestion: null,
       activePairIds: [],
       pois: [],
       poiCategories: [],
@@ -789,6 +808,7 @@
         this.activePoi = null;
         this.splitPairs = null;
         this.bothWeeks = null;
+        this.turnDaySuggestion = null;
         this._fp?.setDate([sat, addDays(sat, 7)], false);
       },
 
@@ -804,6 +824,9 @@
         const checkin = checkinOverride || f.checkin;
         const p = new URLSearchParams({ limit: 200 });
         if (checkin)       p.set("checkin", checkin);
+        // Pass checkout only on single-week calls (no checkinOverride); multi-week
+        // parallel calls supply their own per-week checkin and don't need checkout.
+        if (!checkinOverride && f.checkout) p.set("checkout", f.checkout);
         if (f.beds > 0)    p.set("beds", f.beds);
         if (f.community)   p.set("community", f.community);
         if (f.pool)        p.set("pool", "true");
@@ -823,6 +846,7 @@
         this.loading = true;
         this.splitPairs = null;
         this.bothWeeks = null;
+        this.turnDaySuggestion = null;
         const nights = this.stayNights;
         try {
           // Build list of week-boundary check-in dates within the stay
@@ -838,11 +862,13 @@
           if (checkins.length === 1) {
             const r = await fetch(this.buildUrl(checkins[0]));
             const data = await r.json();
-            // Client-side min_stay gate: hide properties that can't cover the stay
+            // Server-side min_stay filter applied when checkout passed; client gate
+            // is kept as a fallback for single-week calls without a checkout param.
             const raw = data.results || [];
             this.results = raw.filter(r => !r.min_stay_nights || r.min_stay_nights <= nights);
             this.total = this.results.length;
             this.queryMs = data.query_ms || 0;
+            if (data.turn_day_suggestion) this.turnDaySuggestion = data.turn_day_suggestion;
             this.sortResults();
           } else {
             const responses = await Promise.all(
