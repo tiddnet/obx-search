@@ -688,8 +688,14 @@
           this.mapError = "Map library failed to load. Check your connection.";
           return;
         }
-        if (!maplibregl.supported()) {
-          this.mapError = "WebGL is not available in this browser. Map requires hardware acceleration.";
+        try {
+          const c = document.createElement("canvas");
+          if (!(c.getContext("webgl") || c.getContext("webgl2"))) {
+            this.mapError = "WebGL is not available in this browser. Map requires hardware acceleration.";
+            return;
+          }
+        } catch (_) {
+          this.mapError = "WebGL check failed. Map requires hardware acceleration.";
           return;
         }
         try {
