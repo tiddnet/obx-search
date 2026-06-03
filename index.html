@@ -187,6 +187,42 @@
     }
     .zoom-btn:hover { color: var(--accent); border-color: var(--accent); }
 
+    /* ── SECTION LABELS ─────────────────────────────────────────────── */
+    .results-section-label {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0.2rem 0 0.4rem;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 0.25rem; flex-shrink: 0;
+    }
+
+    /* ── SPLIT-STAY PAIR CARDS ───────────────────────────────────────── */
+    .card-pair {
+      border: 1px solid var(--rule); border-radius: var(--radius);
+      background: var(--card); overflow: hidden; flex-shrink: 0;
+      transition: box-shadow 0.15s;
+    }
+    .card-pair:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.12); border-color: var(--accent); }
+    .card-pair-header {
+      padding: 0.35rem 0.7rem;
+      background: #fef9f0; border-bottom: 1px solid #f0e0b8;
+      font-size: 0.8rem; color: #7a5000;
+    }
+    .card-pair-weeks { display: flex; }
+    .card-week {
+      flex: 1; min-width: 0;
+      border-right: 1px solid var(--rule);
+      text-decoration: none; color: inherit;
+      transition: background 0.12s;
+    }
+    .card-week:last-child { border-right: none; }
+    .card-week:hover { background: #f8f8f6; }
+    .card-week-label {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--accent);
+      padding: 0.25rem 0.5rem 0; background: #f0f6ff;
+    }
+
     /* ── MAP FALLBACK ───────────────────────────────────────────────── */
     .map-fallback {
       position: absolute; inset: 0;
@@ -249,6 +285,21 @@
         <label class="filter-label">Check-in week</label>
         <input type="date" x-model="filters.checkin" :min="todayStr">
       </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Duration</label>
+        <select x-model.number="filters.weeks">
+          <option value="1">1 week</option>
+          <option value="2">2 weeks</option>
+        </select>
+      </div>
+
+      <template x-if="filters.weeks === 2">
+        <div class="filter-section">
+          <label class="filter-label">Show split stays saving more than</label>
+          <input type="number" x-model.number="filters.saveThreshold" min="0" step="50" placeholder="300">
+        </div>
+      </template>
 
       <div class="filter-section">
         <label class="filter-label">Bedrooms (minimum)</label>
@@ -352,9 +403,24 @@
     <div class="results-header">
       <template x-if="!loading && results !== null">
         <span>
-          <strong x-text="total.toLocaleString()"></strong> properties
-          <template x-if="filters.checkin">
-            <span x-text="' · week of ' + formatDate(filters.checkin)"></span>
+          <template x-if="filters.weeks === 1">
+            <span>
+              <strong x-text="total.toLocaleString()"></strong> properties
+              <template x-if="filters.checkin">
+                <span x-text="' · week of ' + formatDate(filters.checkin)"></span>
+              </template>
+            </span>
+          </template>
+          <template x-if="filters.weeks === 2">
+            <span>
+              <strong x-text="(bothWeeks ? bothWeeks.length : 0)"></strong> available both weeks
+              <template x-if="splitPairs && splitPairs.length > 0">
+                <span x-text="' · ' + splitPairs.length + ' split-stay options'"></span>
+              </template>
+              <template x-if="filters.checkin">
+                <span x-text="' · ' + formatDate(filters.checkin) + '–' + formatDate(week2DateStr())"></span>
+              </template>
+            </span>
           </template>
           <span x-show="queryMs > 0" x-text="' · ' + queryMs + 'ms'"></span>
         </span>
@@ -446,6 +512,9 @@
                 <div class="card-rate-note" x-text="rateNote(r)"></div>
               </div>
             </template>
+            <template x-if="filters.weeks === 2 && r.week2_rate">
+              <div class="card-rate-note" x-text="'Wk 1 $' + Math.round(r.allin_rate || r.weekly_rate || 0).toLocaleString() + ' + Wk 2 $' + Math.round(r.week2_rate).toLocaleString() + ' = $' + Math.round(r.total_rate).toLocaleString() + ' total'"></div>
+            </template>
             <div class="card-location" x-text="communityLabel(r.community) + (r.gis_ft_to_ocean ? ' · ' + ftLabel(r.gis_ft_to_ocean) + ' to ocean' : '')"></div>
             <template x-if="r.street_address">
               <div class="card-location" x-text="'📍 ' + r.street_address"></div>
@@ -457,6 +526,48 @@
               x-show="r.latitude && r.longitude" title="Zoom map to this property">📍 Map</button>
           </div>
         </a>
+      </template>
+
+      <!-- ── SPLIT-STAY PAIRS (2-week mode) ──────────────────────── -->
+      <template x-if="filters.weeks === 2 && splitPairs && splitPairs.length > 0">
+        <div style="display:contents">
+          <div class="results-section-label" x-text="splitPairs.length + ' split-stay option' + (splitPairs.length > 1 ? 's' : '')"></div>
+          <template x-for="(pair, i) in splitPairs" :key="'pair-' + i">
+            <div class="card-pair"
+                 @mouseenter="highlightPair(pair)"
+                 @mouseleave="unhighlightPair(pair)">
+              <div class="card-pair-header">
+                ✂️ Split stay — saves <strong x-text="'$' + Math.round(pair.savings).toLocaleString()"></strong> vs cheapest single-house option
+              </div>
+              <div class="card-pair-weeks">
+                <a class="card-week" :href="pair.week1.url" target="_blank" rel="noopener" @click.stop="trackClick(pair.week1)">
+                  <div class="card-week-label" x-text="'Week 1 · ' + formatDate(filters.checkin)"></div>
+                  <div style="display:flex;overflow:hidden;">
+                    <img style="width:72px;min-width:72px;object-fit:cover;align-self:stretch;"
+                         :src="pair.week1.image_url" loading="lazy" onerror="this.style.display='none'">
+                    <div class="card-body" style="padding:0.4rem 0.5rem;">
+                      <div class="card-name" x-text="pair.week1.property_name"></div>
+                      <div class="card-meta" x-text="bedsLabel(pair.week1) + ' · ' + communityLabel(pair.week1.community)"></div>
+                      <div class="card-rate" style="font-size:0.88rem" x-text="'$' + Math.round(pair.week1.allin_rate || pair.week1.weekly_rate || 0).toLocaleString() + '/wk'"></div>
+                    </div>
+                  </div>
+                </a>
+                <a class="card-week" :href="pair.week2.url" target="_blank" rel="noopener" @click.stop="trackClick(pair.week2)">
+                  <div class="card-week-label" x-text="'Week 2 · ' + formatDate(week2DateStr())"></div>
+                  <div style="display:flex;overflow:hidden;">
+                    <img style="width:72px;min-width:72px;object-fit:cover;align-self:stretch;"
+                         :src="pair.week2.image_url" loading="lazy" onerror="this.style.display='none'">
+                    <div class="card-body" style="padding:0.4rem 0.5rem;">
+                      <div class="card-name" x-text="pair.week2.property_name"></div>
+                      <div class="card-meta" x-text="bedsLabel(pair.week2) + ' · ' + communityLabel(pair.week2.community)"></div>
+                      <div class="card-rate" style="font-size:0.88rem" x-text="'$' + Math.round(pair.week2.allin_rate || pair.week2.weekly_rate || 0).toLocaleString() + '/wk'"></div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </template>
+        </div>
       </template>
     </div>
 
@@ -549,6 +660,8 @@
         oceanfront: false, oceanside: false, soundfront: false,
         poiId: "", radiusMi: 10,
         maxRate: "",
+        weeks: 1,
+        saveThreshold: 300,
       },
       sort: "price_asc",
       todayStr: new Date().toISOString().slice(0, 10),
@@ -556,6 +669,9 @@
       total: 0,
       queryMs: 0,
       loading: false,
+      splitPairs: null,
+      bothWeeks: null,
+      activePairIds: [],
       pois: [],
       poiCategories: [],
       activePoi: null,
@@ -602,14 +718,28 @@
           pool: false, hotTub: false, pets: false, elevator: false,
           oceanfront: false, oceanside: false, soundfront: false,
           poiId: "", radiusMi: 10, maxRate: "",
+          weeks: 1, saveThreshold: 300,
         };
         this.activePoi = null;
+        this.splitPairs = null;
+        this.bothWeeks = null;
       },
 
-      buildUrl() {
+      addWeeks(dateStr, n) {
+        const d = new Date(dateStr + "T00:00:00");
+        d.setDate(d.getDate() + n * 7);
+        return d.toISOString().slice(0, 10);
+      },
+
+      week2DateStr() {
+        return this.filters.checkin ? this.addWeeks(this.filters.checkin, 1) : "";
+      },
+
+      buildUrl(checkinOverride) {
         const f = this.filters;
+        const checkin = checkinOverride || f.checkin;
         const p = new URLSearchParams({ limit: 200 });
-        if (f.checkin)     p.set("checkin", f.checkin);
+        if (checkin)       p.set("checkin", checkin);
         if (f.beds > 0)    p.set("beds", f.beds);
         if (f.community)   p.set("community", f.community);
         if (f.pool)        p.set("pool", "true");
@@ -627,13 +757,25 @@
 
       async doSearch() {
         this.loading = true;
+        this.splitPairs = null;
+        this.bothWeeks = null;
         try {
-          const r = await fetch(this.buildUrl());
-          const data = await r.json();
-          this.results = data.results || [];
-          this.total = data.total || 0;
-          this.queryMs = data.query_ms || 0;
-          this.sortResults();
+          if (this.filters.weeks === 1) {
+            const r = await fetch(this.buildUrl());
+            const data = await r.json();
+            this.results = data.results || [];
+            this.total = data.total || 0;
+            this.queryMs = data.query_ms || 0;
+            this.sortResults();
+          } else {
+            const wk2 = this.week2DateStr();
+            const [d1, d2] = await Promise.all([
+              fetch(this.buildUrl(this.filters.checkin)).then(r => r.json()),
+              fetch(this.buildUrl(wk2)).then(r => r.json()),
+            ]);
+            this.queryMs = Math.max(d1.query_ms || 0, d2.query_ms || 0);
+            this.compute2WeekResults(d1.results || [], d2.results || []);
+          }
           this.$nextTick(() => this.renderMarkers());
         } catch (e) {
           this.results = [];
@@ -642,9 +784,45 @@
         }
       },
 
+      compute2WeekResults(wk1, wk2) {
+        const rate = r => r.allin_rate || r.weekly_rate || 0;
+        const wk2Map = new Map(wk2.map(r => [r.property_id, r]));
+
+        // Properties available both weeks
+        const both = [];
+        for (const r of wk1) {
+          const r2 = wk2Map.get(r.property_id);
+          if (r2) {
+            both.push({ ...r, week2_rate: rate(r2), total_rate: rate(r) + rate(r2) });
+          }
+        }
+        both.sort((a, b) => a.total_rate - b.total_rate);
+        this.results = both;
+        this.total = both.length;
+        this.bothWeeks = both;
+
+        // Split pairs: top 8 cheapest each week, different properties
+        const bestSingleTotal = both.length > 0 ? both[0].total_rate : Infinity;
+        const top1 = [...wk1].sort((a, b) => rate(a) - rate(b)).slice(0, 8);
+        const top2 = [...wk2].sort((a, b) => rate(a) - rate(b)).slice(0, 8);
+        const pairs = [];
+        for (const r1 of top1) {
+          for (const r2 of top2) {
+            if (r1.property_id === r2.property_id) continue;
+            const total = rate(r1) + rate(r2);
+            const savings = bestSingleTotal - total;
+            if (savings >= (this.filters.saveThreshold || 0)) {
+              pairs.push({ week1: r1, week2: r2, total, savings });
+            }
+          }
+        }
+        pairs.sort((a, b) => b.savings - a.savings);
+        this.splitPairs = pairs.slice(0, 5);
+      },
+
       sortResults() {
         if (!this.results || !this.results.length) return;
-        const rate = r => r.allin_rate || r.weekly_rate || Infinity;
+        const rate = r => (this.filters.weeks === 2 ? r.total_rate : null) || r.allin_rate || r.weekly_rate || Infinity;
         const vscore = r => {
           const vs = (VIEW_SCORE[r.view_type] || 30) / 100;
           const ftb = r.gis_ft_to_ocean || r.feet_to_beach;
@@ -662,6 +840,24 @@
           beds_desc:  (a, b) => (b.bedrooms || 0) - (a.bedrooms || 0),
         };
         this.results = [...this.results].sort(fns[this.sort] || fns.price_asc);
+      },
+
+      highlightPair(pair) {
+        for (const id of [pair.week1.property_id, pair.week2.property_id]) {
+          const m = this.markers[id];
+          if (m) m.getElement().style.cssText += ";transform:scale(1.8);background:#f59e0b;";
+        }
+      },
+      unhighlightPair(pair) {
+        this.activePairIds = [];
+        for (const id of [pair.week1.property_id, pair.week2.property_id]) {
+          const m = this.markers[id];
+          if (m) {
+            const el = m.getElement();
+            el.style.transform = "";
+            el.style.background = el.dataset.baseColor || "#1e6fa8";
+          }
+        }
       },
 
       zoomTo(r) {
@@ -738,18 +934,31 @@
         // Remove old markers
         Object.values(this.markers).forEach(m => m.remove());
         this.markers = {};
-        if (!this.results || this.results.length === 0) return;
+
+        // In 2-week mode, also pin split-pair-only properties (grayed)
+        let allProps = [...(this.results || [])];
+        if (this.filters.weeks === 2 && this.splitPairs) {
+          const seen = new Set(allProps.map(r => r.property_id));
+          for (const pair of this.splitPairs) {
+            for (const r of [pair.week1, pair.week2]) {
+              if (!seen.has(r.property_id)) { seen.add(r.property_id); allProps.push({...r, _splitOnly: true}); }
+            }
+          }
+        }
+        if (!allProps.length) return;
 
         const bounds = new maplibregl.LngLatBounds();
-        this.results.forEach(r => {
+        allProps.forEach(r => {
           if (!r.latitude || !r.longitude) return;
+          const baseColor = r._splitOnly ? "#aaa" : (r.allin_rate ? "#1e6fa8" : "#888");
           const el = document.createElement("div");
           el.className = "map-dot";
+          el.dataset.baseColor = baseColor;
           el.style.cssText = `
             width:10px;height:10px;border-radius:50%;cursor:pointer;
-            background:${r.allin_rate ? '#1e6fa8' : '#888'};
+            background:${baseColor};
             border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3);
-            transition:transform 0.1s;
+            transition:transform 0.1s,background 0.1s;
           `;
           const m = new maplibregl.Marker({ element: el })
             .setLngLat([r.longitude, r.latitude])
