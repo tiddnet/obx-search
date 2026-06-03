@@ -207,7 +207,10 @@
       padding: 0.35rem 0.7rem;
       background: #fef9f0; border-bottom: 1px solid #f0e0b8;
       font-size: 0.8rem; color: #7a5000;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.5rem; flex-wrap: wrap;
     }
+    .card-pair-meta { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; font-size: 0.78rem; }
     .card-pair-weeks { display: flex; }
     .card-week {
       flex: 1; min-width: 0;
@@ -537,7 +540,12 @@
                  @mouseenter="highlightPair(pair)"
                  @mouseleave="unhighlightPair(pair)">
               <div class="card-pair-header">
-                ✂️ Split stay — saves <strong x-text="'$' + Math.round(pair.savings).toLocaleString()"></strong> vs cheapest single-house option
+                <span>✂️ Split stay — saves <strong x-text="'$' + Math.round(pair.savings).toLocaleString()"></strong> vs single house</span>
+                <div class="card-pair-meta">
+                  <span x-text="'$' + Math.round((pair.week1.allin_rate || pair.week1.weekly_rate || 0) + (pair.week2.allin_rate || pair.week2.weekly_rate || 0)).toLocaleString() + ' total'"></span>
+                  <span x-show="pairDistance(pair) !== null" x-text="pairDistance(pair) !== null ? pairDistance(pair).toFixed(1) + ' mi apart' : ''"></span>
+                  <button class="zoom-btn" @click.stop="zoomToPair(pair)" title="Show both on map">📍 Map both</button>
+                </div>
               </div>
               <div class="card-pair-weeks">
                 <a class="card-week" :href="pair.week1.url" target="_blank" rel="noopener" @click.stop="trackClick(pair.week1)">
@@ -840,6 +848,31 @@
           beds_desc:  (a, b) => (b.bedrooms || 0) - (a.bedrooms || 0),
         };
         this.results = [...this.results].sort(fns[this.sort] || fns.price_asc);
+      },
+
+      haversineMiles(lat1, lon1, lat2, lon2) {
+        const R = 3958.8, r = d => d * Math.PI / 180;
+        const a = Math.sin(r(lat2-lat1)/2)**2 + Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(r(lon2-lon1)/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      },
+
+      pairDistance(pair) {
+        const r1 = pair.week1, r2 = pair.week2;
+        if (!r1.latitude || !r1.longitude || !r2.latitude || !r2.longitude) return null;
+        return this.haversineMiles(+r1.latitude, +r1.longitude, +r2.latitude, +r2.longitude);
+      },
+
+      zoomToPair(pair) {
+        if (!this.map) return;
+        const pts = [pair.week1, pair.week2].filter(r => r.latitude && r.longitude);
+        if (!pts.length) return;
+        if (pts.length === 1) {
+          this.map.flyTo({ center: [pts[0].longitude, pts[0].latitude], zoom: 14, duration: 800 });
+          return;
+        }
+        const bounds = new maplibregl.LngLatBounds();
+        pts.forEach(r => bounds.extend([+r.longitude, +r.latitude]));
+        this.map.fitBounds(bounds, { padding: 100, maxZoom: 13, duration: 800 });
       },
 
       highlightPair(pair) {
