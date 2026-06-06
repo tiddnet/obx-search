@@ -863,7 +863,7 @@
           if (checkins.length === 0) checkins.push(this.filters.checkin);
 
           if (checkins.length === 1) {
-            const r = await fetch(this.buildUrl(checkins[0]));
+            const r = await fetch(this.buildUrl());
             const data = await r.json();
             // Server-side min_stay filter applied when checkout passed; client gate
             // is kept as a fallback for single-week calls without a checkout param.
