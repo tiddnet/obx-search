@@ -534,6 +534,11 @@
                   :title="'Minimum stay of ' + r.min_stay_nights + ' nights required — shorter stays may not be bookable for this week'"
                   x-text="'⏱ ' + r.min_stay_nights + '-night min'"></span>
               </template>
+              <template x-if="r.date_offset > 0">
+                <span class="badge" style="background:#e8f4ff;color:#1d4ed8"
+                  :title="'You searched ' + formatDate(filters.checkin) + (filters.checkout ? '–' + formatDate(filters.checkout) : '') + '. Nearest available window: ' + actualDates(r)"
+                  x-text="'📅 ' + actualDates(r)"></span>
+              </template>
               <template x-if="r.pmc === 'brindley_beach'">
                 <span class="badge" title="Brindley Beach properties allow flexible check-in days — not restricted to Saturday arrivals">📅 Flex check-in</span>
               </template>
@@ -1180,6 +1185,11 @@
         const [y, m, d] = iso.split("-");
         const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         return months[+m - 1] + " " + +d;
+      },
+
+      actualDates(r) {
+        const co = addDays(r.week_of, this.stayNights);
+        return this.formatDate(r.week_of) + "–" + this.formatDate(co);
       },
 
       // ── TRACKING ─────────────────────────────────────────────────────
