@@ -656,6 +656,56 @@
 
   </div>
 
+  <!-- ── SHORT-STAY DISCOVERY ─────────────────────────────────────────── -->
+  <div x-data="shortStayDiscovery()" x-init="load()" style="max-width:1200px;margin:2rem auto;padding:0 1rem;">
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+      <h2 style="margin:0;font-size:1.1rem;font-weight:600;">Short-stay openings <span style="font-weight:400;color:#666;font-size:0.9rem;">— PM-quoted 2–6 night gaps, no dates needed</span></h2>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-left:auto;">
+        <select x-model="beds" @change="load()" style="padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;font-size:0.85rem;background:var(--bg);">
+          <option value="0">Any beds</option>
+          <option value="2">2+ beds</option>
+          <option value="3">3+ beds</option>
+          <option value="4">4+ beds</option>
+          <option value="5">5+ beds</option>
+        </select>
+        <select x-model="community" @change="load()" style="padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;font-size:0.85rem;background:var(--bg);">
+          <option value="">Any location</option>
+          <option value="corolla">Corolla</option>
+          <option value="duck">Duck</option>
+          <option value="kitty_hawk,kill_devil_hills,nags_head">KDH / Nags Head</option>
+          <option value="hatteras_village,avon,buxton,frisco,salvo,waves,rodanthe">Hatteras Island</option>
+          <option value="ocracoke">Ocracoke</option>
+        </select>
+        <select x-model="nightsMax" @change="load()" style="padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;font-size:0.85rem;background:var(--bg);">
+          <option value="3">Up to 3 nights</option>
+          <option value="4">Up to 4 nights</option>
+          <option value="6" selected>Up to 6 nights</option>
+        </select>
+      </div>
+    </div>
+    <template x-if="loading">
+      <div style="color:#888;font-size:0.9rem;">Loading…</div>
+    </template>
+    <template x-if="!loading && results.length === 0">
+      <div style="color:#888;font-size:0.9rem;">No short-stay gaps available right now for these filters.</div>
+    </template>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.75rem;">
+      <template x-for="r in results" :key="r.property_id + r.week_of">
+        <a :href="r.url" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;color:inherit;" @click="trackClick(r)">
+          <img :src="r.image_url" loading="lazy" onerror="this.style.display='none'"
+               style="width:100%;height:140px;object-fit:cover;border-radius:6px 6px 0 0;">
+          <div class="card-body">
+            <div class="card-name" x-text="r.property_name"></div>
+            <div class="card-meta" x-text="r.bedrooms + ' BR · ' + communityLabel(r.community)"></div>
+            <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + ' · ' + r.nights + '-night stay'"></div>
+            <div class="card-rate-note" x-text="formatDateRange(r.week_of, r.checkout)"></div>
+            <div class="card-rate-note" style="color:#059669;font-weight:500;">PM-quoted · incl. fees</div>
+          </div>
+        </a>
+      </template>
+    </div>
+  </div>
+
   <!-- Flatpickr date range picker -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
   <!-- Alpine.js -->
@@ -1228,6 +1278,53 @@
       },
 
       onListScroll() { /* future: infinite scroll */ },
+    };
+  }
+
+  function shortStayDiscovery() {
+    return {
+      results: [],
+      loading: false,
+      beds: 0,
+      community: "",
+      nightsMax: 6,
+
+      async load() {
+        this.loading = true;
+        const params = new URLSearchParams({
+          beds: this.beds,
+          nights_max: this.nightsMax,
+          limit: 24,
+        });
+        if (this.community) params.set("community", this.community);
+        try {
+          const data = await fetch(`${API}/search/short-stays?${params}`).then(r => r.json());
+          this.results = data.results || [];
+        } catch (e) {
+          this.results = [];
+        }
+        this.loading = false;
+      },
+
+      communityLabel(c) { return COMMUNITY_LABELS[c] || (c || "").replace(/_/g, " "); },
+
+      formatDateRange(checkin, checkout) {
+        if (!checkin) return "";
+        const opts = { month: "short", day: "numeric" };
+        const ci = new Date(checkin + "T00:00:00").toLocaleDateString("en-US", opts);
+        if (!checkout) return ci;
+        const co = new Date(checkout + "T00:00:00").toLocaleDateString("en-US", opts);
+        return `${ci} – ${co}`;
+      },
+
+      trackClick(r) {
+        try {
+          navigator.sendBeacon(TRACKER, JSON.stringify({
+            property_id: r.property_id, pmc: r.pmc,
+            source: "short_stay_discovery",
+          }));
+        } catch (e) {}
+      },
     };
   }
   </script>
