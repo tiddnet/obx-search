@@ -534,6 +534,10 @@
                 <span class="badge" style="background:#fff3e0;color:#b45309"
                   :title="'Foredune crest is ~' + Math.round(Math.abs(r.dune_delta_ft)) + ' ft above deck level — ocean view from lower floors may be obstructed'">⚠️ Dune may obstruct</span>
               </template>
+              <template x-if="r.verified_view">
+                <span class="badge" style="background:#f0fdf4;color:#15803d;font-weight:600"
+                  title="GIS sight-line analysis independently confirms ocean view quality — verified against satellite imagery and terrain data">✓ View verified</span>
+              </template>
               <template x-if="r.has_pool"><span class="badge" title="Property has a pool">🏊 Pool</span></template>
               <template x-if="r.has_hot_tub"><span class="badge" title="Property has a hot tub">♨️ Hot tub</span></template>
               <template x-if="r.pet_friendly"><span class="badge" title="Pets allowed — confirm breed/size restrictions with the property manager">🐾 Pets ok</span></template>
