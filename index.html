@@ -555,9 +555,15 @@
                 <span class="badge" title="Brindley Beach properties allow flexible check-in days — not restricted to Saturday arrivals">📅 Flex check-in</span>
               </template>
             </div>
-            <template x-if="r.allin_rate">
+            <template x-if="r.allin_rate && !r.nights">
               <div>
                 <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + '/wk'"></div>
+                <div class="card-rate-note" x-text="rateNote(r)"></div>
+              </div>
+            </template>
+            <template x-if="r.allin_rate && r.nights">
+              <div>
+                <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + ' · ' + r.nights + '-night stay'"></div>
                 <div class="card-rate-note" x-text="rateNote(r)"></div>
               </div>
             </template>
@@ -570,8 +576,11 @@
             <template x-if="stayNights > 7 && r.total_rate">
               <div class="card-rate-note" x-text="'$' + Math.round(r.total_rate).toLocaleString() + ' total · ' + stayNights + ' nights'"></div>
             </template>
-            <template x-if="r.estimated_total">
+            <template x-if="r.estimated_total && !r.rate_is_exact">
               <div class="card-rate-note" x-text="'~$' + r.estimated_total.toLocaleString() + ' est. · ' + stayNights + ' nights'"></div>
+            </template>
+            <template x-if="r.estimated_total && r.rate_is_exact">
+              <div class="card-rate-note" x-text="'$' + r.estimated_total.toLocaleString() + ' total · PM-quoted'"></div>
             </template>
             <div class="card-location" x-text="communityLabel(r.community) + (r.gis_ft_to_ocean ? ' · ' + ftLabel(r.gis_ft_to_ocean) + ' to ocean' : '')"></div>
             <template x-if="r.street_address">
@@ -1043,6 +1052,7 @@
       rateNote(r) {
         const pmc = this.pmcLabel(r.pmc);
         const pct = r.market_pct ? ` · ${Math.round(r.market_pct)}th pct` : "";
+        if (r.rate_is_exact) return pmc + " · incl. fees" + pct;
         if (GUEST_RATE_PMCS.has(r.pmc)) return pmc + " · incl. fees" + pct;
         const base = r.allin_rate || r.weekly_rate;
         if (base) {
