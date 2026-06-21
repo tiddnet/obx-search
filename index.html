@@ -445,7 +445,10 @@
 
     <!-- ── RESULTS HEADER ──────────────────────────────────────────── -->
     <div class="results-header">
-      <template x-if="!loading && results !== null">
+      <template x-if="!loading && results !== null && isFeaturedView">
+        <span style="color:var(--muted);font-size:.9rem">✦ Featured properties — search above to explore all 9,000+</span>
+      </template>
+      <template x-if="!loading && results !== null && !isFeaturedView">
         <span>
           <strong x-text="total.toLocaleString()"></strong>
           <span x-text="stayNights > 7 ? ' available all weeks' : ' properties'"></span>
@@ -460,7 +463,7 @@
       </template>
       <template x-if="loading"><span><span class="spinner"></span> Searching…</span></template>
       <template x-if="!loading && results === null"><span>Enter filters and search</span></template>
-      <template x-if="results && results.length > 0">
+      <template x-if="results && results.length > 0 && !isFeaturedView">
         <select x-model="sort" @change="sortResults()" style="margin-left:auto;padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.82rem;color:var(--ink);">
           <option value="price_asc">Price ↑</option>
           <option value="price_desc">Price ↓</option>
@@ -810,6 +813,8 @@
         return n > 0 ? n : 7;
       },
       results: null,
+      featuredResults: null,
+      isFeaturedView: false,
       total: 0,
       queryMs: 0,
       loading: false,
@@ -828,7 +833,7 @@
 
       init() {
         this.loadPois();
-        this.doSearch();
+        this.loadFeatured();
         this._fp = flatpickr("#fp-date-range", {
           mode: "range",
           minDate: "today",
@@ -846,6 +851,19 @@
 
       openDatePicker() {
         this._fp?.open();
+      },
+
+      async loadFeatured() {
+        try {
+          const data = await fetch(API + "/featured").then(r => r.json());
+          this.featuredResults = data.results || [];
+          if (this.featuredResults.length) {
+            this.results = this.featuredResults;
+            this.total   = this.featuredResults.length;
+            this.isFeaturedView = true;
+            this.$nextTick(() => this.syncMap());
+          }
+        } catch(e) { /* silent — search still works */ }
       },
 
       async loadPois() {
@@ -922,6 +940,7 @@
       },
 
       async doSearch() {
+        this.isFeaturedView = false;
         this.loading = true;
         this.splitPairs = null;
         this.bothWeeks = null;
