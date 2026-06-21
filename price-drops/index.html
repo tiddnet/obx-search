@@ -394,10 +394,10 @@
         if (!this.email) return;
         this.subscribing = true;
         try {
-          const res = await fetch(`${API}/subscribe/price-drops`, {
+          const res = await fetch("https://track.obx.deals/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: this.email }),
+            body: JSON.stringify({ email: this.email, features: ["price_drops"] }),
           });
           if (res.ok) {
             this.subscribeConfirm = "✓ You're on the list. One email per week.";
