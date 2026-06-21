@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OBX Quick Getaways — Short-Stay Openings · June 21, 2026</title>
+  <meta name="description" content="27 short-stay openings on Outer Banks vacation rentals — 2 to 6 night gaps in otherwise booked calendars, as of June 21, 2026.">
+  <meta property="og:image" content="https://obx.deals/images/hero.png">
+  <link rel="canonical" href="https://search.obx.deals/quick-getaways/">
+  <link rel="icon" href="https://obx.deals/favicon.ico">
+  <style>
+    :root {
+      --ink: #1a1a1a; --muted: #5a5a5a; --rule: #d8e8e7;
+      --accent: #0B7A75; --bg: #F2FAF9; --card-bg: #fff;
+      --nav-bg: #1A2B3C; --nav-text: #b8d0cc;
+      --nav-active: #ffffff; --nav-gold: #E8B84B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--ink);
+      font-size: 16px; line-height: 1.5;
+    }
+    /* ── Site nav ── */
+    .site-nav {
+      background: var(--nav-bg); position: sticky; top: 0; z-index: 100;
+      border-bottom: 2px solid var(--nav-gold);
+    }
+    .site-nav-inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; align-items: center; padding: 0 1.25rem;
+    }
+    .nav-brand {
+      font-weight: 800; font-size: 1.1rem; color: var(--nav-active);
+      text-decoration: none; padding: 0.75rem 0; margin-right: 0.75rem; white-space: nowrap;
+    }
+    .nav-brand:hover { color: var(--nav-gold); text-decoration: none; }
+    .nav-brand .brand-obx { color: var(--nav-gold); }
+    .nav-links {
+      display: flex; align-items: stretch; gap: 0; flex: 1; overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-links a {
+      color: var(--nav-text); text-decoration: none;
+      font-size: 0.88rem; font-weight: 500; padding: 0.75rem 0.9rem; white-space: nowrap;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-links a:hover { color: var(--nav-active); text-decoration: none; }
+    .nav-links a.nav-active {
+      color: var(--nav-active); border-bottom-color: var(--nav-gold); font-weight: 600;
+    }
+    .nav-links .nav-sep {
+      color: #3a5060; align-self: center; font-size: 0.8rem; padding: 0 0.1rem;
+    }
+    @media (max-width: 480px) {
+      .nav-brand .brand-deals { display: none; }
+      .nav-links a { padding: 0.75rem 0.6rem; font-size: 0.82rem; }
+    }
+    /* ── Page ── */
+    main { max-width: 780px; margin: 0 auto; padding: 28px 20px 60px; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+    .tagline { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; }
+    .intro { margin-bottom: 24px; font-size: 15px; color: var(--muted); }
+    .intro strong { color: var(--ink); }
+    .deal {
+      background: var(--card-bg); border: 1px solid var(--rule);
+      border-radius: 8px; overflow: hidden; margin-bottom: 14px;
+      display: flex; align-items: stretch;
+    }
+    .card-img { width: 140px; min-width: 140px; overflow: hidden; }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-body { padding: 16px 18px; flex: 1; min-width: 0; }
+    .deal h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    @media (max-width: 500px) {
+      .deal { flex-direction: column; }
+      .card-img { width: 100%; min-width: unset; height: 160px; }
+    }
+    .meta { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    .dates { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .price { font-size: 15px; margin-bottom: 8px; }
+    .total { font-weight: 700; }
+    .ppn { color: var(--muted); font-size: 13px; margin-left: 8px; }
+    .cta a {
+      color: var(--accent); font-size: 14px; text-decoration: none; font-weight: 500;
+    }
+    .cta a:hover { text-decoration: underline; }
+    .empty-state { color: var(--muted); padding: 32px 0; text-align: center; }
+    footer {
+      border-top: 1px solid var(--rule); padding: 20px 24px;
+      font-size: 12px; color: var(--muted); text-align: center;
+    }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="OBX Deals network">
+    <div class="site-nav-inner">
+      <a href="https://obx.deals/" class="nav-brand">
+        <span class="brand-obx">OBX</span><span class="brand-deals"> Deals</span>
+      </a>
+      <div class="nav-links">
+        <a href="https://search.obx.deals/">Search</a>
+        <span class="nav-sep">|</span>
+        <a href="https://search.obx.deals/price-drops/">Price Drops</a>
+        <span class="nav-sep">|</span>
+        <a href="https://search.obx.deals/quick-getaways/" class="nav-active" aria-current="page">Quick Getaways</a>
+        <span class="nav-sep">|</span>
+        <a href="https://owners.obx.deals/">Owner Hub</a>
+      </div>
+    </div>
+  </nav>
+  <main>
+    <h1>Quick Getaways</h1>
+    <p class="tagline">Short-stay openings · June 21, 2026</p>
+    <p class="intro">
+      <strong>27 short-stay openings</strong> across
+      <strong>27 properties</strong> —
+      2 to 6 night gaps in otherwise booked OBX calendars.
+      Most listings require a full week, so these are uncommon.
+      Sorted by season then soonest check-in.
+    </p>
+    <article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/AE/thumbnail_170869704.jpeg" alt="KH030-Stealin Time" loading="lazy"></div>
+  <div class="card-body">
+    <h3>KH030-Stealin Time</h3>
+    <p class="meta">3BR · between_highways · Kitty-Hawk</p>
+    <p class="dates">Jun 21–27 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,176 total</span>
+      <span class="ppn">$363/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/kh030-stealin-time" data-property="outer_banks_blue-kh030-stealin-time" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://images.rezfusion.com?optimize=true&amp;rotate=true&amp;quality=70&amp;width=420&amp;source=https%3A//img.trackhs.com/x/https%3A//track-pm.s3.amazonaws.com/sun/image/061e6537-78ee-41bb-a4dd-2110f2260ee0&amp;settings=default" alt="Sunny Home 574" loading="lazy"></div>
+  <div class="card-body">
+    <h3>Sunny Home 574</h3>
+    <p class="meta">4BR · Oceanside · South-Nags-Head</p>
+    <p class="dates">Jun 21–27 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$3,064 total</span>
+      <span class="ppn">$511/night</span>
+    </p>
+    <p class="cta"><a href="https://www.sunrealtync.com/outer-banks/south-nags-head-nc-rentals/oceanside/574" data-property="sun_realty-sunny-home-574" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Sun Realty &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/10/B2/thumbnail_173316281.jpeg" alt="OS1P-Endless Sun" loading="lazy"></div>
+  <div class="card-body">
+    <h3>OS1P-Endless Sun</h3>
+    <p class="meta">4BR · Oceanside · Corolla</p>
+    <p class="dates">Jun 21–26 &nbsp;·&nbsp; 5 nights (opening)</p>
+    <p class="price">
+      <span class="total">$3,941 total</span>
+      <span class="ppn">$788/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/os1p-endless-sun" data-property="outer_banks_blue-os1p-endless-sun" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/60/thumbnail_170460042.jpeg" alt="OS3Q-Shared Dreams" loading="lazy"></div>
+  <div class="card-body">
+    <h3>OS3Q-Shared Dreams</h3>
+    <p class="meta">5BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 21–27 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$4,970 total</span>
+      <span class="ppn">$828/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/os3q-shared-dreams" data-property="outer_banks_blue-os3q-shared-dreams" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/06/F6/thumbnail_160690589.jpeg" alt="SA029-The Little Wren" loading="lazy"></div>
+  <div class="card-body">
+    <h3>SA029-The Little Wren</h3>
+    <p class="meta">4BR · Oceanfront · Duck · Pool</p>
+    <p class="dates">Jun 21–24 &nbsp;·&nbsp; 3 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,541 total</span>
+      <span class="ppn">$847/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/sa029-the-little-wren" data-property="outer_banks_blue-sa029-the-little-wre" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/02/92/thumbnail_169157555.jpeg" alt="SA019-Duck Refuge" loading="lazy"></div>
+  <div class="card-body">
+    <h3>SA019-Duck Refuge</h3>
+    <p class="meta">5BR · Oceanfront · Duck · Pool</p>
+    <p class="dates">Jun 21–27 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$5,769 total</span>
+      <span class="ppn">$962/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/sa019-duck-refuge" data-property="outer_banks_blue-sa019-duck-refuge" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/FE/thumbnail_173425879.jpeg" alt="CD015-Sunny Lagoon" loading="lazy"></div>
+  <div class="card-body">
+    <h3>CD015-Sunny Lagoon</h3>
+    <p class="meta">4BR · Oceanside · Duck</p>
+    <p class="dates">Jun 22–28 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$3,731 total</span>
+      <span class="ppn">$622/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/cd015-sunny-lagoon" data-property="outer_banks_blue-cd015-sunny-lagoon" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/08/AF/thumbnail_173370891.jpeg" alt="STERN4-A Peace of Quiet" loading="lazy"></div>
+  <div class="card-body">
+    <h3>STERN4-A Peace of Quiet</h3>
+    <p class="meta">4BR · Oceanside · Duck · Pool</p>
+    <p class="dates">Jun 22–28 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$4,077 total</span>
+      <span class="ppn">$680/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/stern4-a-peace-of-quiet" data-property="outer_banks_blue-stern4-a-peace-of-qu" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://images.rezfusion.com?optimize=true&amp;rotate=true&amp;quality=70&amp;width=768&amp;source=https%3A//gallery.streamlinevrs.com/units-gallery/00/0D/5F/image_171803365.png&amp;settings=default" alt="Heron Cove 203N" loading="lazy"></div>
+  <div class="card-body">
+    <h3>Heron Cove 203N</h3>
+    <p class="meta">3BR · Oceanfront · Nags-Head · Pool</p>
+    <p class="dates">Jun 24–27 &nbsp;·&nbsp; 3 nights (opening)</p>
+    <p class="price">
+      <span class="total">$3,909 total</span>
+      <span class="ppn">$1,303/night</span>
+    </p>
+    <p class="cta"><a href="https://www.beachrealtync.com/outer-banks-rentals/heron-cove-203n?rcav%5Bbegin%5D=07/11/2026&amp;rcav%5Bend%5D=07/18/2026&amp;rcav%5Badult%5D=1&amp;rcav%5Bchild%5D=0&amp;rcav%5Beid%5D=1008&amp;eid=1008&amp;alt_turnday=1" data-property="beach_realty_nc-heron-cove-203n" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Beach Realty NC &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/C3/thumbnail_170951586.jpeg" alt="KH032-Beach Scout" loading="lazy"></div>
+  <div class="card-body">
+    <h3>KH032-Beach Scout</h3>
+    <p class="meta">3BR · Oceanfront · Kitty-Hawk · Hot tub</p>
+    <p class="dates">Jun 27–Jul 1 &nbsp;·&nbsp; 4 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,107 total</span>
+      <span class="ppn">$527/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/kh032-beach-scout" data-property="outer_banks_blue-kh032-beach-scout" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://images.rezfusion.com?optimize=true&amp;rotate=true&amp;quality=70&amp;width=420&amp;source=https%3A//img.trackhs.com/x/https%3A//track-pm.s3.amazonaws.com/sun/image/f03ee26b-0399-44d0-9b3c-e1ccb078c276&amp;settings=default" alt="Fiddler on the Beach BB-1108" loading="lazy"></div>
+  <div class="card-body">
+    <h3>Fiddler on the Beach BB-1108</h3>
+    <p class="meta">3BR · soundside · Kill-Devil-Hills · Pool</p>
+    <p class="dates">Jun 27–Jul 2 &nbsp;·&nbsp; 5 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,707 total</span>
+      <span class="ppn">$541/night</span>
+    </p>
+    <p class="cta"><a href="https://www.sunrealtync.com/outer-banks/kill-devil-hills-nc-rentals/soundside/bb-1108" data-property="sun_realty-fiddler-on-the-beach" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Sun Realty &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/06/7B/thumbnail_169601821.jpeg" alt="SA028-Sanderling Song" loading="lazy"></div>
+  <div class="card-body">
+    <h3>SA028-Sanderling Song</h3>
+    <p class="meta">4BR · Oceanside · Duck · Pool</p>
+    <p class="dates">Jun 27–30 &nbsp;·&nbsp; 3 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,328 total</span>
+      <span class="ppn">$776/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/sa028-sanderling-song" data-property="outer_banks_blue-sa028-sanderling-son" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/02/8B/thumbnail_160015176.jpeg" alt="OS2F-Sea Scapes" loading="lazy"></div>
+  <div class="card-body">
+    <h3>OS2F-Sea Scapes</h3>
+    <p class="meta">5BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–30 &nbsp;·&nbsp; 3 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,607 total</span>
+      <span class="ppn">$869/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/os2f-sea-scapes" data-property="outer_banks_blue-os2f-sea-scapes" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0D/58/thumbnail_166721648.jpeg" alt="CP014-Searenity" loading="lazy"></div>
+  <div class="card-body">
+    <h3>CP014-Searenity</h3>
+    <p class="meta">5BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 3 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$5,241 total</span>
+      <span class="ppn">$873/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/cp014-searenity" data-property="outer_banks_blue-cp014-searenity" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/07/59/thumbnail_169375213.jpeg" alt="BB010-The Three Fish Inn" loading="lazy"></div>
+  <div class="card-body">
+    <h3>BB010-The Three Fish Inn</h3>
+    <p class="meta">4BR · Oceanside · Duck · Pool · Hot tub</p>
+    <p class="dates">Jun 27–30 &nbsp;·&nbsp; 3 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,687 total</span>
+      <span class="ppn">$896/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/bb010-the-three-fish-inn" data-property="outer_banks_blue-bb010-the-three-fish" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/4B/thumbnail_169908894.jpeg" alt="BU20B-Big Blue (North)" loading="lazy"></div>
+  <div class="card-body">
+    <h3>BU20B-Big Blue (North)</h3>
+    <p class="meta">5BR · Oceanside · Corolla · Pool</p>
+    <p class="dates">Jun 27–Jul 3 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$5,484 total</span>
+      <span class="ppn">$914/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/bu20b-big-blue-north" data-property="outer_banks_blue-bu20b-big-blue-(nort" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/4B/thumbnail_169909102.jpeg" alt="BU20A-Big Blue (South)" loading="lazy"></div>
+  <div class="card-body">
+    <h3>BU20A-Big Blue (South)</h3>
+    <p class="meta">5BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 2 &nbsp;·&nbsp; 5 nights (opening)</p>
+    <p class="price">
+      <span class="total">$4,662 total</span>
+      <span class="ppn">$932/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/bu20a-big-blue-south" data-property="outer_banks_blue-bu20a-big-blue-(sout" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/04/thumbnail_169064606.jpeg" alt="SS041-Sea Glass Shack" loading="lazy"></div>
+  <div class="card-body">
+    <h3>SS041-Sea Glass Shack</h3>
+    <p class="meta">4BR · unknown · Southern-Shores · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 1 &nbsp;·&nbsp; 4 nights (opening)</p>
+    <p class="price">
+      <span class="total">$3,764 total</span>
+      <span class="ppn">$941/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/ss041-sea-glass-shack" data-property="outer_banks_blue-ss041-sea-glass-shac" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0E/2B/thumbnail_169030927.jpeg" alt="WH082-Summer Breeze Too" loading="lazy"></div>
+  <div class="card-body">
+    <h3>WH082-Summer Breeze Too</h3>
+    <p class="meta">8BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–30 &nbsp;·&nbsp; 3 nights (opening)</p>
+    <p class="price">
+      <span class="total">$2,941 total</span>
+      <span class="ppn">$980/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/wh082-summer-breeze-too" data-property="outer_banks_blue-wh082-summer-breeze-" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/02/92/thumbnail_166750912.jpeg" alt="SG001-The Sandy Peach" loading="lazy"></div>
+  <div class="card-body">
+    <h3>SG001-The Sandy Peach</h3>
+    <p class="meta">5BR · Oceanside · Duck · Pool · Hot tub</p>
+    <p class="dates">Jun 27–30 &nbsp;·&nbsp; 3 nights (opening)</p>
+    <p class="price">
+      <span class="total">$3,148 total</span>
+      <span class="ppn">$1,049/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/sg001-the-sandy-peach" data-property="outer_banks_blue-sg001-the-sandy-peac" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/02/80/thumbnail_167078038.jpeg" alt="OL007-Ocean Paradise" loading="lazy"></div>
+  <div class="card-body">
+    <h3>OL007-Ocean Paradise</h3>
+    <p class="meta">6BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 3 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$6,473 total</span>
+      <span class="ppn">$1,079/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/ol007-ocean-paradise" data-property="outer_banks_blue-ol007-ocean-paradise" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/05/ED/thumbnail_166874209.jpeg" alt="FS009-Duck Tales" loading="lazy"></div>
+  <div class="card-body">
+    <h3>FS009-Duck Tales</h3>
+    <p class="meta">5BR · Oceanside · Duck · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 1 &nbsp;·&nbsp; 4 nights (opening)</p>
+    <p class="price">
+      <span class="total">$4,520 total</span>
+      <span class="ppn">$1,130/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/fs009-duck-tales" data-property="outer_banks_blue-fs009-duck-tales" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/72/thumbnail_170461849.jpeg" alt="WH091-Barefoot Crab" loading="lazy"></div>
+  <div class="card-body">
+    <h3>WH091-Barefoot Crab</h3>
+    <p class="meta">7BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 1 &nbsp;·&nbsp; 4 nights (opening)</p>
+    <p class="price">
+      <span class="total">$4,799 total</span>
+      <span class="ppn">$1,200/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/wh091-barefoot-crab" data-property="outer_banks_blue-wh091-barefoot-crab" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0E/4C/thumbnail_169273431.jpeg" alt="FFR003-Beautiful Sunshine" loading="lazy"></div>
+  <div class="card-body">
+    <h3>FFR003-Beautiful Sunshine</h3>
+    <p class="meta">5BR · unknown · Kitty-Hawk · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 1 &nbsp;·&nbsp; 4 nights (opening)</p>
+    <p class="price">
+      <span class="total">$5,373 total</span>
+      <span class="ppn">$1,343/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/ffr003-beautiful-sunshine" data-property="outer_banks_blue-ffr003-beautiful-sun" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0C/31/thumbnail_169384036.jpeg" alt="WH081-Fun in Paradise" loading="lazy"></div>
+  <div class="card-body">
+    <h3>WH081-Fun in Paradise</h3>
+    <p class="meta">8BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 3 &nbsp;·&nbsp; 6 nights (opening)</p>
+    <p class="price">
+      <span class="total">$8,331 total</span>
+      <span class="ppn">$1,389/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/wh081-fun-in-paradise" data-property="outer_banks_blue-wh081-fun-in-paradis" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/08/A2/thumbnail_162789475.jpeg" alt="OL021-Eden Found" loading="lazy"></div>
+  <div class="card-body">
+    <h3>OL021-Eden Found</h3>
+    <p class="meta">7BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 2 &nbsp;·&nbsp; 5 nights (opening)</p>
+    <p class="price">
+      <span class="total">$7,193 total</span>
+      <span class="ppn">$1,439/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/ol021-eden-found" data-property="outer_banks_blue-ol021-eden-found" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+<article class="deal">
+  <div class="card-img"><img src="https://gallery.streamlinevrs.com/units-gallery/00/0F/12/thumbnail_170443007.jpeg" alt="WH087-A Shore Pleasure" loading="lazy"></div>
+  <div class="card-body">
+    <h3>WH087-A Shore Pleasure</h3>
+    <p class="meta">8BR · Oceanside · Corolla · Pool · Hot tub</p>
+    <p class="dates">Jun 27–Jul 1 &nbsp;·&nbsp; 4 nights (opening)</p>
+    <p class="price">
+      <span class="total">$6,580 total</span>
+      <span class="ppn">$1,645/night</span>
+    </p>
+    <p class="cta"><a href="https://www.outerbanksblue.com/outer-banks-vacation-rentals/wh087-a-shore-pleasure" data-property="outer_banks_blue-wh087-a-shore-pleasu" onclick="obxTrack(this)" target="_blank" rel="noopener">View on Outer Banks Blue &rarr;</a></p>
+  </div>
+</article>
+  </main>
+  <footer>
+    <a href="https://obx.deals/">obx.deals</a>
+    &nbsp;·&nbsp;
+    Data updated daily from nightly scrapes across 25 OBX property managers.
+    &nbsp;·&nbsp;
+    <a href="https://obx.deals/privacy">Privacy policy</a>
+  </footer>
+  <script>
+  (function() {
+    function getVid() {
+      var m = document.cookie.match(/obxd_vid=([^;]+)/);
+      if (m) return m[1];
+      var v = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      document.cookie = 'obxd_vid=' + v + '; max-age=31536000; path=/; domain=.obx.deals; SameSite=Lax; Secure';
+      return v;
+    }
+    var vid = getVid();
+    window.obxTrack = function(el) {
+      if (navigator.doNotTrack === '1') return;
+      var pid = el.getAttribute('data-property') || '';
+      navigator.sendBeacon('https://track.obx.deals/c', JSON.stringify({
+        property_id: pid, page: 'quick_getaways', visitor_id: vid,
+        referrer: document.referrer || ''
+      }));
+    };
+  })();
+  </script>
+</body>
+</html>
