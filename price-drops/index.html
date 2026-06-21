@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-K8184TG5M2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-K8184TG5M2');
+  </script>
+  <title>OBX Price Drops — Outer Banks Rental Deals</title>
+  <meta name="description" content="OBX vacation rentals with price cuts in the last 25 days. Sorted by biggest dollar drop.">
+  <link rel="canonical" href="https://search.obx.deals/price-drops/">
+  <style>
+    :root {
+      --ink:    #1a1a1a;
+      --muted:  #5a5a5a;
+      --rule:   #e0e0e0;
+      --accent: #1e6fa8;
+      --drop:   #b04a2c;
+      --bg:     #fafaf7;
+      --card:   #ffffff;
+      --tag-bg: #edf4fb;
+      --tag-ink:#1e6fa8;
+      --radius: 8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg); color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px; line-height: 1.5;
+    }
+    header {
+      background: var(--card); border-bottom: 1px solid var(--rule);
+      padding: 0.75rem 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { text-decoration: none; color: var(--ink); }
+    .logo strong { font-size: 1.1rem; letter-spacing: -0.01em; }
+    .logo span { color: var(--accent); }
+    .header-sub { color: var(--muted); font-size: 0.82rem; }
+    .back-link {
+      margin-left: auto; font-size: 0.82rem; color: var(--accent);
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    /* ── PAGE ─────────────────────────────────────────── */
+    .page { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .page-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.25rem; }
+
+    /* ── FILTERS ─────────────────────────────────────── */
+    .filters-bar {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+      margin-bottom: 1rem; padding: 0.75rem;
+      background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
+    }
+    .filters-bar select, .filters-bar input[type=number] {
+      padding: 0.3rem 0.5rem; border: 1px solid var(--rule); border-radius: 4px;
+      background: var(--bg); font-size: 0.88rem; color: var(--ink);
+    }
+    .filter-label { font-size: 0.78rem; color: var(--muted); }
+    .toggle-btn {
+      padding: 0.25rem 0.6rem; border: 1px solid var(--rule); border-radius: 4px;
+      background: var(--bg); font-size: 0.82rem; cursor: pointer; color: var(--ink);
+    }
+    .toggle-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .search-btn {
+      padding: 0.3rem 0.8rem; background: var(--accent); color: #fff;
+      border: none; border-radius: 4px; font-size: 0.88rem; cursor: pointer;
+      margin-left: auto;
+    }
+    .search-btn:hover { opacity: 0.9; }
+
+    /* ── RESULTS HEADER ──────────────────────────────── */
+    .results-header {
+      font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .spinner {
+      display: inline-block; width: 12px; height: 12px;
+      border: 2px solid var(--rule); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── CARDS ───────────────────────────────────────── */
+    .cards { display: flex; flex-direction: column; gap: 0.75rem; }
+    .card {
+      background: var(--card); border: 1px solid var(--rule);
+      border-radius: var(--radius); padding: 0.875rem 1rem;
+      display: grid; grid-template-columns: 120px 1fr;
+      gap: 0.75rem; text-decoration: none; color: inherit;
+      transition: box-shadow 0.15s;
+    }
+    .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card-thumb {
+      width: 120px; height: 80px; object-fit: cover;
+      border-radius: 4px; background: var(--rule);
+    }
+    .card-thumb-placeholder {
+      width: 120px; height: 80px; border-radius: 4px;
+      background: var(--rule); display: flex; align-items: center;
+      justify-content: center; color: var(--muted); font-size: 1.5rem;
+    }
+    .card-body { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+    .card-name {
+      font-weight: 600; font-size: 0.95rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .card-meta { font-size: 0.8rem; color: var(--muted); }
+    .card-pricing { display: flex; align-items: baseline; gap: 0.6rem; margin-top: 0.25rem; }
+    .card-now { font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+    .card-was { font-size: 0.88rem; color: var(--muted); text-decoration: line-through; }
+    .card-drop {
+      font-size: 0.82rem; font-weight: 600; color: var(--drop);
+      background: #fdf0ec; padding: 0.1rem 0.4rem; border-radius: 3px;
+    }
+    .card-avail {
+      font-size: 0.78rem; color: #1a7a3c; background: #e8f5ee;
+      padding: 0.1rem 0.4rem; border-radius: 3px; display: inline-block;
+    }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem; }
+    .tag {
+      font-size: 0.72rem; padding: 0.1rem 0.4rem;
+      background: var(--tag-bg); color: var(--tag-ink); border-radius: 3px;
+    }
+    .empty-state {
+      text-align: center; padding: 3rem 1rem; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    /* ── OPT-IN ──────────────────────────────────────── */
+    .opt-in {
+      margin-top: 2rem; padding: 1.25rem 1.5rem;
+      background: var(--card); border: 1px solid var(--rule);
+      border-radius: var(--radius);
+    }
+    .opt-in h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .opt-in p { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .opt-in form { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .opt-in input[type=email] {
+      flex: 1; min-width: 200px; padding: 0.4rem 0.65rem;
+      border: 1px solid var(--rule); border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .opt-in button {
+      padding: 0.4rem 0.9rem; background: var(--accent); color: #fff;
+      border: none; border-radius: 4px; font-size: 0.88rem; cursor: pointer;
+    }
+    .opt-in button:hover { opacity: 0.9; }
+    .opt-in-confirm { font-size: 0.85rem; color: #1a7a3c; margin-top: 0.5rem; }
+
+    @media (max-width: 600px) {
+      .card { grid-template-columns: 90px 1fr; }
+      .card-thumb { width: 90px; height: 60px; }
+      .card-thumb-placeholder { width: 90px; height: 60px; }
+    }
+  </style>
+</head>
+<body x-data="priceDropsApp()" x-init="load()">
+
+  <header>
+    <a class="logo" href="https://search.obx.deals/">
+      <strong>OBX<span>Deals</span></strong>
+    </a>
+    <span class="header-sub">Price Drops</span>
+    <a class="back-link" href="https://search.obx.deals/">← Back to search</a>
+  </header>
+
+  <main class="page">
+    <h1 class="page-title">OBX Price Drops</h1>
+    <p class="page-sub">
+      Vacation rentals with weekly rate cuts of ≥10% in the last 25 days.
+      All weeks still open as of today's data. Sorted by largest dollar drop.
+    </p>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <span class="filter-label">Beds</span>
+      <select x-model.number="filters.beds">
+        <option value="0">Any</option>
+        <option value="2">2+</option>
+        <option value="3">3+</option>
+        <option value="4">4+</option>
+        <option value="5">5+</option>
+        <option value="6">6+</option>
+        <option value="7">7+</option>
+      </select>
+
+      <span class="filter-label">Area</span>
+      <select x-model="filters.community">
+        <option value="">All OBX</option>
+        <option value="corolla">Corolla</option>
+        <option value="duck">Duck</option>
+        <option value="southern_shores">Southern Shores</option>
+        <option value="kitty_hawk">Kitty Hawk</option>
+        <option value="kill_devil_hills">Kill Devil Hills</option>
+        <option value="nags_head">Nags Head</option>
+        <option value="avon">Avon</option>
+        <option value="waves">Waves</option>
+        <option value="rodanthe">Rodanthe</option>
+        <option value="salvo">Salvo</option>
+        <option value="buxton">Buxton</option>
+        <option value="hatteras_village">Hatteras</option>
+        <option value="ocracoke">Ocracoke</option>
+      </select>
+
+      <span class="filter-label">Min drop $</span>
+      <input type="number" x-model.number="filters.minDrop"
+             min="0" step="100" style="width:80px">
+
+      <button class="toggle-btn" :class="filters.pool && 'on'"
+              @click="filters.pool = !filters.pool">🏊 Pool</button>
+      <button class="toggle-btn" :class="filters.oceanfront && 'on'"
+              @click="filters.oceanfront = !filters.oceanfront">🌊 Oceanfront</button>
+
+      <button class="search-btn" @click="load()">Refresh</button>
+    </div>
+
+    <!-- Results header -->
+    <div class="results-header">
+      <template x-if="loading"><span><span class="spinner"></span> Loading…</span></template>
+      <template x-if="!loading && results !== null">
+        <span>
+          <strong x-text="results.length.toLocaleString()"></strong> price drops
+          <span x-text="' · data from ' + dataDate"></span>
+        </span>
+      </template>
+    </div>
+
+    <!-- Cards -->
+    <div class="cards">
+      <template x-if="!loading && results !== null && results.length === 0">
+        <div class="empty-state">
+          <div class="icon">📉</div>
+          <div>No price drops match these filters.</div>
+          <div style="margin-top:0.35rem;font-size:0.82rem">Try fewer filters or a lower minimum drop.</div>
+        </div>
+      </template>
+
+      <template x-for="r in results || []" :key="r.property_id + r.week_of">
+        <a class="card" :href="r.url" target="_blank" rel="noopener"
+           @click="beacon(r)">
+          <template x-if="r.image_url">
+            <img class="card-thumb" :src="r.image_url" :alt="r.property_name" loading="lazy">
+          </template>
+          <template x-if="!r.image_url">
+            <div class="card-thumb-placeholder">🏖️</div>
+          </template>
+
+          <div class="card-body">
+            <div class="card-name" x-text="r.property_name"></div>
+            <div class="card-meta"
+                 x-text="communityLabel(r.submarket) + ' · ' + r.bedrooms + 'BR · ' + viewLabel(r)">
+            </div>
+
+            <div class="card-pricing">
+              <span class="card-now" x-text="'$' + Math.round(r.current_rate).toLocaleString() + '/wk'"></span>
+              <span class="card-was" x-text="'Was $' + Math.round(r.prior_rate).toLocaleString()"></span>
+              <span class="card-drop"
+                    x-text="'↓$' + Math.round(r.drop_amount).toLocaleString() + ' (' + r.drop_pct + '%)'">
+              </span>
+            </div>
+
+            <div class="card-tags">
+              <span class="card-avail">✓ Still open · <span x-text="formatDate(r.week_of)"></span></span>
+              <template x-if="r.has_pool"><span class="tag">🏊 Pool</span></template>
+              <template x-if="r.has_hot_tub"><span class="tag">♨️ Hot tub</span></template>
+              <template x-if="r.feet_to_beach">
+                <span class="tag" x-text="Math.round(r.feet_to_beach / 5280 * 10) / 10 + ' mi to beach'"></span>
+              </template>
+              <span class="tag" x-text="pmcLabel(r.pmc)"></span>
+            </div>
+          </div>
+        </a>
+      </template>
+    </div>
+
+    <!-- Opt-in -->
+    <div class="opt-in">
+      <h3>Get weekly price drop alerts</h3>
+      <p>One email per week when new deals match your search. No spam.</p>
+      <form @submit.prevent="subscribe()">
+        <input type="email" x-model="email" placeholder="you@example.com" required>
+        <button type="submit" :disabled="subscribing">
+          <span x-show="!subscribing">Notify me</span>
+          <span x-show="subscribing"><span class="spinner"></span></span>
+        </button>
+      </form>
+      <div x-show="subscribeConfirm" class="opt-in-confirm" x-text="subscribeConfirm"></div>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+  <script>
+  const STAGING_API = "https://l05w0vm8vd.execute-api.us-east-1.amazonaws.com";
+  const API = new URLSearchParams(location.search).get("env") === "staging"
+    ? STAGING_API
+    : "https://search-api.obx.deals";
+  const TRACKER = "https://track.obx.deals/c";
+
+  const COMMUNITY_LABELS = {
+    corolla: "Corolla", carova: "Carova", duck: "Duck",
+    southern_shores: "Southern Shores", kitty_hawk: "Kitty Hawk",
+    kill_devil_hills: "Kill Devil Hills", nags_head: "Nags Head",
+    south_nags_head: "S. Nags Head", rodanthe: "Rodanthe",
+    waves: "Waves", salvo: "Salvo", avon: "Avon",
+    buxton: "Buxton", frisco: "Frisco", hatteras_village: "Hatteras Village",
+    ocracoke: "Ocracoke", island_creek: "Island Creek",
+    ocean_sands_q: "Ocean Sands Q",
+  };
+  const PMC_LABELS = {
+    hatteras_realty: "Hatteras Realty", outer_banks_blue: "OBX Blue",
+    surf_or_sound: "Surf or Sound", twiddy: "Twiddy",
+    village_realty: "Village Realty", joe_lamb_jr: "Joe Lamb Jr",
+    brindley_beach: "Brindley Beach", sun_realty: "Sun Realty",
+    resort_realty: "Resort Realty", carolina_designs: "Carolina Designs",
+    midgett: "Midgett", ocracoke_island_realty: "Ocracoke Island Realty",
+    paramount: "Paramount", shoreline_obx: "Shoreline OBX",
+    evolve: "Evolve", kees: "KEES", airbnb: "Airbnb",
+    rbo: "RBO / VRBO", houfy: "Houfy",
+    beach_realty_nc: "Beach Realty NC", seaside: "Seaside",
+  };
+
+  function formatDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  function priceDropsApp() {
+    return {
+      filters: { beds: 0, community: "", pool: false, oceanfront: false, minDrop: 0 },
+      results: null,
+      loading: false,
+      dataDate: "",
+      email: "",
+      subscribing: false,
+      subscribeConfirm: "",
+
+      async load() {
+        this.loading = true;
+        const p = new URLSearchParams();
+        if (this.filters.beds)       p.set("beds", this.filters.beds);
+        if (this.filters.community)  p.set("community", this.filters.community);
+        if (this.filters.pool)       p.set("pool", "true");
+        if (this.filters.oceanfront) p.set("oceanfront", "true");
+        if (this.filters.minDrop)    p.set("min_drop", this.filters.minDrop);
+        p.set("limit", "200");
+
+        const qs = new URLSearchParams(location.search).get("env") === "staging"
+          ? "&env=staging" : "";
+
+        try {
+          const res = await fetch(`${API}/price-drops?${p}${qs}`);
+          const data = await res.json();
+          this.results = data.results || [];
+          if (this.results.length > 0) {
+            this.dataDate = new Date(this.results[0].as_of).toLocaleDateString(
+              "en-US", { month: "short", day: "numeric" }
+            );
+          }
+        } catch (e) {
+          this.results = [];
+        }
+        this.loading = false;
+      },
+
+      communityLabel(sub) { return COMMUNITY_LABELS[sub] || sub || ""; },
+      pmcLabel(pmc)       { return PMC_LABELS[pmc] || pmc || ""; },
+      viewLabel(r) {
+        if (r.oceanfront) return "Oceanfront";
+        if (r.semi_oceanfront) return "Semi-oceanfront";
+        if (r.oceanside) return "Oceanside";
+        if (r.soundfront) return "Soundfront";
+        if (r.soundside) return "Soundside";
+        return r.view_type || "";
+      },
+
+      beacon(r) {
+        if (!navigator.sendBeacon) return;
+        navigator.sendBeacon(TRACKER, JSON.stringify({
+          property_id: r.property_id, pmc: r.pmc,
+          url: r.url, source: "price-drops",
+        }));
+      },
+
+      async subscribe() {
+        if (!this.email) return;
+        this.subscribing = true;
+        try {
+          const res = await fetch(`${API}/subscribe/price-drops`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: this.email }),
+          });
+          if (res.ok) {
+            this.subscribeConfirm = "✓ You're on the list. One email per week.";
+            this.email = "";
+          } else {
+            this.subscribeConfirm = "Something went wrong — try again.";
+          }
+        } catch {
+          this.subscribeConfirm = "Something went wrong — try again.";
+        }
+        this.subscribing = false;
+      },
+    };
+  }
+  </script>
+</body>
+</html>
