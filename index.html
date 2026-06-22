@@ -544,7 +544,7 @@
           </template>
         </div>
       </template>
-      <template x-for="(r, i) in results || []" :key="searchMode === 'flexible' ? r.property_id + (r.week_of || '') : r.property_id">
+      <template x-for="(r, i) in results || []" :key="searchMode === 'flexible' ? r.property_id + '_' + (r.week_of || '') + '_' + i : r.property_id">
         <a class="card" :class="activeId === r.property_id && 'active'"
            :href="r.url" target="_blank" rel="noopener"
            @click="trackClick(r)"
