@@ -555,6 +555,15 @@
           <template x-if="!turnDaySuggestion">
             <div style="margin-top:0.4rem;font-size:0.82rem">Try fewer filters or different dates.</div>
           </template>
+          <template x-if="filters.checkin && filters.checkout">
+            <div style="margin-top:0.75rem">
+              <button class="nudge-btn"
+                style="background:var(--accent);color:#fff;border:none;"
+                @click="watchModal = true; watchDone = false; watchError = ''; watchEmail = '';">
+                🔔 Alert me if anything opens up
+              </button>
+            </div>
+          </template>
         </div>
       </template>
       <template x-for="(r, i) in results || []" :key="searchMode === 'flexible' ? r.property_id + '_' + (r.week_of || '') + '_' + i : r.property_id">
