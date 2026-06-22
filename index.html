@@ -512,6 +512,9 @@
       <template x-if="!loading && results === null"><span>Enter filters and search</span></template>
       <template x-if="results && results.length > 0 && !isFeaturedView">
         <select x-model="sort" @change="sortResults()" style="margin-left:auto;padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.82rem;color:var(--ink);">
+          <template x-if="searchMode === 'flexible'">
+            <option value="date_asc">Date ↑</option>
+          </template>
           <option value="price_asc">Price ↑</option>
           <option value="price_desc">Price ↓</option>
           <option value="best_value">Best Value</option>
@@ -806,7 +809,7 @@
         minNights: 3,
         maxNights: 7,
       },
-      sort: "price_asc",
+      sort: new URLSearchParams(location.search).get("mode") === "flexible" ? "date_asc" : "price_asc",
       todayStr: localDateStr(new Date()),
       get stayNights() {
         if (!this.filters.checkin || !this.filters.checkout) return 7;
@@ -863,7 +866,8 @@
         if (mode === 'flexible') { url.searchParams.set('mode', 'flexible'); }
         else { url.searchParams.delete('mode'); }
         history.replaceState(null, '', url.toString());
-        if (mode === 'flexible') this.doFlexSearch();
+        if (mode === 'flexible') { this.sort = 'date_asc'; this.doFlexSearch(); }
+        else if (mode === 'exact') { this.sort = 'price_asc'; }
       },
 
       async doFlexSearch() {
@@ -893,6 +897,7 @@
           this.results = data.results || [];
           this.total   = this.results.length;
           this.queryMs = data.query_ms || 0;
+          this.sortResults();
         } catch(e) {
           this.results = [];
           this.total   = 0;
@@ -1097,6 +1102,7 @@
           return (0.35 * vs + 0.30 * bs + 0.20 * rs + 0.15 * as_) * 100;
         };
         const fns = {
+          date_asc:   (a, b) => (a.week_of || '').localeCompare(b.week_of || ''),
           price_asc:  (a, b) => rate(a) - rate(b),
           price_desc: (a, b) => rate(b) - rate(a),
           best_value: (a, b) => (vscore(b) / Math.max(rate(b), 1)) - (vscore(a) / Math.max(rate(a), 1)),
