@@ -898,7 +898,7 @@
           this.total   = 0;
         }
         this.loading = false;
-        this.$nextTick(() => this.syncMap());
+        this.$nextTick(() => { if (typeof this.syncMap === 'function') this.syncMap(); });
       },
 
       async loadFeatured() {
