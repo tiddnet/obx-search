@@ -723,6 +723,19 @@
     : "https://search-api.obx.deals";
   const TRACKER = "https://track.obx.deals/c";
 
+  function getVisitorId() {
+    const COOKIE = 'obxd_vid';
+    const m = document.cookie.match(new RegExp('(?:^|; )' + COOKIE + '=([^;]+)'));
+    if (m) return m[1];
+    const v = crypto.randomUUID ? crypto.randomUUID() :
+      ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c^(crypto.getRandomValues(new Uint8Array(1))[0]&(15>>c/4))).toString(16));
+    document.cookie = COOKIE + '=' + v + '; max-age=31536000; path=/; domain=.obx.deals; SameSite=Lax; Secure';
+    return v;
+  }
+  const VISITOR_ID = getVisitorId();
+  const IS_INTERNAL = localStorage.getItem('obx_internal') === '1';
+
   const GUEST_RATE_PMCS = new Set([
     "hatteras_realty","outer_banks_blue","resort_realty","shoreline_obx",
     "paramount","twiddy","carolina_designs","joe_lamb_jr","kees",
@@ -899,9 +912,11 @@
           this.total   = this.results.length;
           this.queryMs = data.query_ms || 0;
           this.sortResults();
+          this.trackSearch(this.total);
         } catch(e) {
           this.results = [];
           this.total   = 0;
+          this.trackSearch(0);
         }
         this.loading = false;
         this.$nextTick(() => { if (typeof this.syncMap === 'function') this.syncMap(); });
@@ -1034,9 +1049,11 @@
             this.queryMs = Math.max(...responses.map(d => d.query_ms || 0));
             this.computeMultiWeekResults(responses.map(d => d.results || []), nights);
           }
+          this.trackSearch(this.total);
           this.$nextTick(() => this.renderMarkers());
         } catch (e) {
           this.results = [];
+          this.trackSearch(0);
         } finally {
           this.loading = false;
         }
@@ -1346,12 +1363,46 @@
       // ── TRACKING ─────────────────────────────────────────────────────
 
       trackClick(r) {
-        if (!navigator.sendBeacon) return;
+        if (!navigator.sendBeacon || IS_INTERNAL) return;
         const payload = JSON.stringify({
-          t: "click", src: "search",
-          pid: r.property_id, pmc: r.pmc,
-          url: r.url, wk: this.filters.checkin,
-          rate: r.allin_rate,
+          event_type: "click",
+          visitor_id: VISITOR_ID,
+          url: r.url,
+          property_id: r.property_id,
+          referrer: location.href,
+        });
+        navigator.sendBeacon(TRACKER, new Blob([payload], { type: "application/json" }));
+      },
+
+      trackSearch(resultCount) {
+        if (!navigator.sendBeacon || IS_INTERNAL) return;
+        const f = this.filters;
+        const fl = this.flex;
+        const params = { mode: this.searchMode };
+        if (this.searchMode === 'exact') {
+          if (f.checkin)  params.checkin  = f.checkin;
+          if (f.checkout) params.checkout = f.checkout;
+        } else {
+          if (fl.from)       params.after      = fl.from;
+          if (fl.to)         params.before     = fl.to;
+          if (fl.minNights)  params.nights_min = fl.minNights;
+          if (fl.maxNights)  params.nights_max = fl.maxNights;
+        }
+        if (f.beds > 0)    params.beds      = f.beds;
+        if (f.community)   params.community = f.community;
+        if (f.maxRate > 0) params.max_rate  = f.maxRate;
+        if (f.pool)        params.pool      = true;
+        if (f.hotTub)      params.hot_tub   = true;
+        if (f.pets)        params.pets      = true;
+        if (f.oceanfront)  params.oceanfront = true;
+        if (f.oceanside)   params.oceanside  = true;
+        if (f.soundfront)  params.soundfront = true;
+        const payload = JSON.stringify({
+          event_type: "search",
+          visitor_id: VISITOR_ID,
+          url: location.href,
+          result_count: resultCount,
+          search_params: params,
         });
         navigator.sendBeacon(TRACKER, new Blob([payload], { type: "application/json" }));
       },
