@@ -511,17 +511,27 @@
       <template x-if="loading"><span><span class="spinner"></span> Searching…</span></template>
       <template x-if="!loading && results === null"><span>Enter filters and search</span></template>
       <template x-if="results && results.length > 0 && !isFeaturedView">
-        <select x-model="sort" @change="sortResults()" style="margin-left:auto;padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.82rem;color:var(--ink);">
-          <template x-if="searchMode === 'flexible'">
-            <option value="date_asc">Date ↑</option>
+        <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+          <template x-if="searchMode === 'exact' && filters.checkin && filters.checkout">
+            <button
+              @click="watchModal = true; watchDone = false; watchError = ''; watchEmail = '';"
+              style="padding:0.3rem 0.65rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.82rem;color:var(--ink);cursor:pointer;white-space:nowrap;"
+              title="Get an email when prices drop for this search">
+              🔔 Price alert
+            </button>
           </template>
-          <option value="price_asc">Price ↑</option>
-          <option value="price_desc">Price ↓</option>
-          <option value="best_value">Best Value</option>
-          <option value="beach">Beach Proximity</option>
-          <option value="beds_asc">Beds ↑</option>
-          <option value="beds_desc">Beds ↓</option>
-        </select>
+          <select x-model="sort" @change="sortResults()" style="padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.82rem;color:var(--ink);">
+            <template x-if="searchMode === 'flexible'">
+              <option value="date_asc">Date ↑</option>
+            </template>
+            <option value="price_asc">Price ↑</option>
+            <option value="price_desc">Price ↓</option>
+            <option value="best_value">Best Value</option>
+            <option value="beach">Beach Proximity</option>
+            <option value="beds_asc">Beds ↑</option>
+            <option value="beds_desc">Beds ↓</option>
+          </select>
+        </div>
       </template>
     </div>
 
@@ -709,6 +719,73 @@
 
   </div>
 
+  <!-- ── PRICE ALERT MODAL (ADR 0043) ──────────────────────────────── -->
+  <template x-teleport="body">
+    <div
+      x-show="watchModal"
+      x-transition.opacity
+      @click.self="watchModal = false"
+      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;">
+      <div style="background:var(--bg);border-radius:10px;padding:1.75rem 1.5rem;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.22);">
+        <template x-if="!watchDone">
+          <div>
+            <h2 style="margin:0 0 0.3rem;font-size:1.15rem;">🔔 Price drop alert</h2>
+            <p style="margin:0 0 1rem;font-size:0.875rem;color:var(--muted);">
+              We'll email you when a matching rental drops into your budget for
+              <strong x-text="formatDate(filters.checkin) + ' – ' + formatDate(filters.checkout)"></strong>.
+            </p>
+            <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.3rem;">Email</label>
+            <input
+              x-model="watchEmail"
+              type="email"
+              placeholder="you@example.com"
+              @keydown.enter="submitWatch()"
+              style="width:100%;box-sizing:border-box;padding:0.5rem 0.65rem;border:1px solid var(--rule);border-radius:6px;font-size:0.9rem;background:var(--bg);color:var(--ink);margin-bottom:0.5rem;">
+            <template x-if="watchError">
+              <p x-text="watchError" style="color:#c0392b;font-size:0.82rem;margin:0 0 0.5rem;"></p>
+            </template>
+            <p style="font-size:0.75rem;color:var(--muted);margin:0 0 1rem;">
+              You'll only be alerted when prices drop for
+              <span x-text="
+                [filters.beds > 0 ? filters.beds + '+ BR' : '',
+                 filters.community ? communityLabel(filters.community) : '',
+                 filters.maxRate > 0 ? 'under $' + Number(filters.maxRate).toLocaleString() + '/wk' : '']
+                .filter(Boolean).join(', ') || 'any matching property'
+              "></span>.
+              One-click cancel included.
+            </p>
+            <div style="display:flex;gap:0.6rem;">
+              <button
+                @click="submitWatch()"
+                :disabled="watchSubmitting"
+                style="flex:1;padding:0.55rem;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+                <span x-text="watchSubmitting ? 'Saving…' : 'Set alert'"></span>
+              </button>
+              <button
+                @click="watchModal = false"
+                style="padding:0.55rem 1rem;background:transparent;border:1px solid var(--rule);border-radius:6px;font-size:0.9rem;cursor:pointer;color:var(--ink);">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </template>
+        <template x-if="watchDone">
+          <div style="text-align:center;padding:0.5rem 0;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">✅</div>
+            <h2 style="margin:0 0 0.5rem;font-size:1.1rem;">Alert set!</h2>
+            <p style="font-size:0.875rem;color:var(--muted);margin:0 0 1.25rem;">
+              Check your inbox for a confirmation. We'll email you when prices drop.
+            </p>
+            <button @click="watchModal = false"
+              style="padding:0.5rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;">
+              Done
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+
   <!-- Flatpickr date range picker -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
   <!-- Alpine.js -->
@@ -824,6 +901,11 @@
       },
       sort: new URLSearchParams(location.search).get("mode") === "flexible" ? "date_asc" : "price_asc",
       todayStr: localDateStr(new Date()),
+      watchModal: false,
+      watchEmail: "",
+      watchSubmitting: false,
+      watchDone: false,
+      watchError: "",
       get stayNights() {
         if (!this.filters.checkin || !this.filters.checkout) return 7;
         const n = Math.round(
@@ -1408,6 +1490,38 @@
       },
 
       onListScroll() { /* future: infinite scroll */ },
+
+      async submitWatch() {
+        const email = (this.watchEmail || "").trim().toLowerCase();
+        if (!email || !/^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{2,}$/.test(email)) {
+          this.watchError = "Please enter a valid email address.";
+          return;
+        }
+        this.watchError = "";
+        this.watchSubmitting = true;
+        const f = this.filters;
+        const payload = { email, checkin: f.checkin, checkout: f.checkout };
+        if (f.beds > 0)    payload.beds      = f.beds;
+        if (f.community)   payload.community = f.community;
+        if (f.maxRate > 0) payload.max_rate  = f.maxRate;
+        try {
+          const res = await fetch("https://track.obx.deals/watch", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            this.watchDone = true;
+          } else {
+            const text = await res.text();
+            this.watchError = text || "Something went wrong. Please try again.";
+          }
+        } catch {
+          this.watchError = "Network error. Please try again.";
+        } finally {
+          this.watchSubmitting = false;
+        }
+      },
     };
   }
 
