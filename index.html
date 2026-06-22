@@ -617,7 +617,7 @@
             <template x-if="r.allin_rate && r.nights">
               <div>
                 <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + ' · ' + r.nights + '-night stay'"></div>
-                <div class="card-rate-note" x-text="formatDateRange(r.week_of, r.checkout) + ' · PM-quoted'"></div>
+                <div class="card-rate-note" x-text="formatDate(r.week_of) + '–' + formatDate(r.checkout) + ' · PM-quoted'"></div>
               </div>
             </template>
             <template x-if="!r.allin_rate && r.weekly_rate">
