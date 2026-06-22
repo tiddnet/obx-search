@@ -843,7 +843,7 @@
           minDate: "today",
           dateFormat: "M j",
           clickOpens: false,
-          defaultDate: [this.filters.checkin, this.filters.checkout],
+          defaultDate: [this.filters.checkin, this.filters.checkout].filter(Boolean).map(d => { const [y,m,day] = d.split('-'); return new Date(+y, +m-1, +day); }),
           onClose: (dates) => {
             if (dates.length === 2) {
               this.filters.checkin  = localDateStr(dates[0]);
@@ -909,7 +909,7 @@
             this.results = this.featuredResults;
             this.total   = this.featuredResults.length;
             this.isFeaturedView = true;
-            this.$nextTick(() => this.syncMap());
+            this.$nextTick(() => { if (typeof this.syncMap === 'function') this.syncMap(); });
           }
         } catch(e) { /* silent — search still works */ }
       },
