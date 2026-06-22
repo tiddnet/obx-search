@@ -11,6 +11,16 @@ Hosted on GitHub Pages (CNAME: search.obx.deals). Deployed automatically on push
 - API: `https://search-api.obx.deals` (Lambda container, rebuilt nightly with fresh `search.db`)
 - Tracking: `https://track.obx.deals/c` (click tracker Lambda, DynamoDB `obx_deals_clicks`)
 
+## Related repos
+
+| Repo | Site | Purpose |
+|---|---|---|
+| [rental-intel](https://github.com/tiddnet/rental-intel) *(private)* | — | Data pipeline, scrapers, Lambda infra, deploy scripts |
+| [obx-deals](https://github.com/tiddnet/obx-deals) | obx.deals | Deal listings + verified view badges |
+| [obx-owners](https://github.com/tiddnet/obx-owners) | owners.obx.deals | Owner Hub (Auth0 login required) |
+
+See `rental-intel/README.md` for the full system architecture, data flow, and AWS infrastructure.
+
 ## Developer notes
 
 ### Search tracking self-exclusion
