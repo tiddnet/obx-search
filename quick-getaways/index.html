@@ -138,69 +138,18 @@
     </div>
   </nav>
 
-  <div x-data="qg()" x-cloak>
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label for="f-from">From</label>
-        <input type="date" id="f-from" x-model="fromDate">
-      </div>
-      <div class="filter-group">
-        <label for="f-to">To</label>
-        <input type="date" id="f-to" x-model="toDate">
-      </div>
-      <div class="filter-group">
-        <label for="f-price">Max total $</label>
-        <input type="number" id="f-price" x-model.number="maxPrice" placeholder="No limit" min="0" step="100">
-      </div>
-      <div class="filter-group">
-        <label for="f-beds">Min beds</label>
-        <select id="f-beds" x-model.number="minBeds">
-          <option value="0">Any</option>
-          <option value="2">2+</option>
-          <option value="3">3+</option>
-          <option value="4">4+</option>
-          <option value="5">5+</option>
-          <option value="6">6+</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Nights</label>
-        <div style="display:flex;gap:4px;align-items:center">
-          <select x-model.number="minNights" style="min-width:60px">
-            <option value="2">2+</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
-            <option value="5">5+</option>
-          </select>
-          <span style="font-size:13px;color:var(--muted)">–</span>
-          <select x-model.number="maxNights" style="min-width:60px">
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6" selected>6</option>
-          </select>
-        </div>
-      </div>
-      <div class="filter-group">
-        <label for="f-town">Town</label>
-        <select id="f-town" x-model="town">
-          <option value="">Any town</option>
-          <option value="corolla">Corolla</option>
-<option value="duck">Duck</option>
-<option value="avon">Avon</option>
-<option value="buxton">Buxton</option>
-<option value="kitty-hawk">Kitty-Hawk</option>
-<option value="nags-head">Nags-Head</option>
-<option value="kill-devil-hills">Kill-Devil-Hills</option>
-<option value="southern-shores">Southern-Shores</option>
-        </select>
-      </div>
-      <div class="filter-count">
-        <strong x-text="filtered.length"></strong> of 300 openings
-      </div>
-      <button class="filter-clear" @click="reset()" x-show="hasFilters">Clear filters</button>
+  <div style="background:#edf4fb;border-bottom:1px solid #c7dff7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div>
+      <strong style="font-size:0.95rem;">Looking for specific dates or a longer trip?</strong>
+      <span style="color:var(--muted);font-size:0.9rem;margin-left:0.5rem;">Search by your travel window and stay length.</span>
     </div>
+    <a href="https://search.obx.deals/?mode=flexible"
+       style="background:var(--accent);color:#fff;text-decoration:none;padding:0.5rem 1.1rem;border-radius:6px;font-size:0.9rem;font-weight:600;white-space:nowrap;">
+      Find it faster →
+    </a>
+  </div>
 
+  <div x-data="qg()" x-cloak>
     <main>
       <h1>Quick Getaways</h1>
       <p class="tagline">Short-stay openings · June 22, 2026</p>

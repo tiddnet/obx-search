@@ -118,6 +118,18 @@
       background: var(--tag-bg); border-color: var(--accent);
       color: var(--accent); font-weight: 500;
     }
+    .mode-toggle {
+      display: flex; border: 1px solid var(--rule); border-radius: 6px;
+      overflow: hidden; margin-bottom: 1.25rem;
+    }
+    .mode-toggle button {
+      flex: 1; padding: 0.45rem 0.5rem; border: none; background: var(--bg);
+      font-size: 0.82rem; cursor: pointer; font-family: inherit;
+      color: var(--muted); transition: background 0.15s, color 0.15s;
+    }
+    .mode-toggle button.active {
+      background: var(--accent); color: #fff; font-weight: 600;
+    }
 
     .search-btn {
       width: 100%; padding: 0.6rem;
@@ -324,7 +336,14 @@
     <!-- ── FILTERS ─────────────────────────────────────────────────── -->
     <aside class="filters">
 
-      <div class="filter-section">
+      <!-- ── MODE TOGGLE ───────────────────────────────────────────── -->
+      <div class="mode-toggle">
+        <button :class="searchMode === 'exact' && 'active'" @click="setMode('exact')">Exact dates</button>
+        <button :class="searchMode === 'flexible' && 'active'" @click="setMode('flexible')">Flexible dates</button>
+      </div>
+
+      <!-- Exact dates -->
+      <div class="filter-section" x-show="searchMode === 'exact'">
         <label class="filter-label">
           Dates
           <span x-text="'· ' + stayNights + ' night' + (stayNights !== 1 ? 's' : '')"
@@ -337,6 +356,26 @@
                  : 'Select dates'"></div>
           <input id="fp-date-range" type="text" readonly
                  style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;pointer-events:none">
+        </div>
+      </div>
+
+      <!-- Flexible dates -->
+      <div x-show="searchMode === 'flexible'">
+        <div class="filter-section">
+          <label class="filter-label">Travel window</label>
+          <div style="display:flex;gap:0.4rem;align-items:center;">
+            <input type="date" x-model="flex.from" @change="doFlexSearch()" style="flex:1;">
+            <span style="color:var(--muted);font-size:0.85rem;">to</span>
+            <input type="date" x-model="flex.to" @change="doFlexSearch()" style="flex:1;">
+          </div>
+        </div>
+        <div class="filter-section">
+          <label class="filter-label">Stay length (nights)</label>
+          <div style="display:flex;gap:0.4rem;align-items:center;">
+            <input type="number" x-model.number="flex.minNights" min="2" max="28" @change="doFlexSearch()" style="flex:1;">
+            <span style="color:var(--muted);font-size:0.85rem;">to</span>
+            <input type="number" x-model.number="flex.maxNights" min="2" max="28" @change="doFlexSearch()" style="flex:1;">
+          </div>
         </div>
       </div>
 
@@ -436,7 +475,7 @@
         </template>
       </div>
 
-      <button class="search-btn" @click="doSearch()" :disabled="loading">
+      <button class="search-btn" @click="searchMode === 'flexible' ? doFlexSearch() : doSearch()" :disabled="loading">
         <span x-show="!loading">Search</span>
         <span x-show="loading"><span class="spinner"></span></span>
       </button>
@@ -451,12 +490,20 @@
       <template x-if="!loading && results !== null && !isFeaturedView">
         <span>
           <strong x-text="total.toLocaleString()"></strong>
-          <span x-text="stayNights > 7 ? ' available all weeks' : ' properties'"></span>
+          <template x-if="searchMode === 'exact'">
+            <span x-text="stayNights > 7 ? ' available all weeks' : ' properties'"></span>
+          </template>
+          <template x-if="searchMode === 'flexible'">
+            <span> openings</span>
+          </template>
           <template x-if="splitPairs && splitPairs.length > 0">
             <span x-text="' · ' + splitPairs.length + ' split-stay option' + (splitPairs.length > 1 ? 's' : '')"></span>
           </template>
-          <template x-if="filters.checkin">
+          <template x-if="searchMode === 'exact' && filters.checkin">
             <span x-text="' · ' + formatDate(filters.checkin) + (filters.checkout ? '–' + formatDate(filters.checkout) : '') + ' · ' + stayNights + 'n'"></span>
+          </template>
+          <template x-if="searchMode === 'flexible'">
+            <span x-text="' · ' + flex.minNights + '–' + flex.maxNights + ' nights'"></span>
           </template>
           <span x-show="queryMs > 0" x-text="' · ' + queryMs + 'ms'"></span>
         </span>
@@ -567,7 +614,7 @@
             <template x-if="r.allin_rate && r.nights">
               <div>
                 <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + ' · ' + r.nights + '-night stay'"></div>
-                <div class="card-rate-note" x-text="rateNote(r)"></div>
+                <div class="card-rate-note" x-text="formatDateRange(r.week_of, r.checkout) + ' · PM-quoted'"></div>
               </div>
             </template>
             <template x-if="!r.allin_rate && r.weekly_rate">
@@ -659,56 +706,6 @@
 
   </div>
 
-  <!-- ── SHORT-STAY DISCOVERY ─────────────────────────────────────────── -->
-  <div x-data="shortStayDiscovery()" x-init="load()" style="max-width:1200px;margin:2rem auto;padding:0 1rem;">
-    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
-      <h2 style="margin:0;font-size:1.1rem;font-weight:600;">Short-stay openings <span style="font-weight:400;color:#666;font-size:0.9rem;">— PM-quoted 2–6 night gaps, no dates needed</span></h2>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-left:auto;">
-        <select x-model="beds" @change="load()" style="padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;font-size:0.85rem;background:var(--bg);">
-          <option value="0">Any beds</option>
-          <option value="2">2+ beds</option>
-          <option value="3">3+ beds</option>
-          <option value="4">4+ beds</option>
-          <option value="5">5+ beds</option>
-        </select>
-        <select x-model="community" @change="load()" style="padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;font-size:0.85rem;background:var(--bg);">
-          <option value="">Any location</option>
-          <option value="corolla">Corolla</option>
-          <option value="duck">Duck</option>
-          <option value="kitty_hawk,kill_devil_hills,nags_head">KDH / Nags Head</option>
-          <option value="hatteras_village,avon,buxton,frisco,salvo,waves,rodanthe">Hatteras Island</option>
-          <option value="ocracoke">Ocracoke</option>
-        </select>
-        <select x-model="nightsMax" @change="load()" style="padding:0.3rem 0.5rem;border:1px solid var(--rule);border-radius:4px;font-size:0.85rem;background:var(--bg);">
-          <option value="3">Up to 3 nights</option>
-          <option value="4">Up to 4 nights</option>
-          <option value="6" selected>Up to 6 nights</option>
-        </select>
-      </div>
-    </div>
-    <template x-if="loading">
-      <div style="color:#888;font-size:0.9rem;">Loading…</div>
-    </template>
-    <template x-if="!loading && results.length === 0">
-      <div style="color:#888;font-size:0.9rem;">No short-stay gaps available right now for these filters.</div>
-    </template>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.75rem;">
-      <template x-for="r in results" :key="r.property_id + r.week_of">
-        <a :href="r.url" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;color:inherit;" @click="trackClick(r)">
-          <img :src="r.image_url" loading="lazy" onerror="this.style.display='none'"
-               style="width:100%;height:140px;object-fit:cover;border-radius:6px 6px 0 0;">
-          <div class="card-body">
-            <div class="card-name" x-text="r.property_name"></div>
-            <div class="card-meta" x-text="r.bedrooms + ' BR · ' + communityLabel(r.community)"></div>
-            <div class="card-rate" x-text="'$' + Math.round(r.allin_rate).toLocaleString() + ' · ' + r.nights + '-night stay'"></div>
-            <div class="card-rate-note" x-text="formatDateRange(r.week_of, r.checkout)"></div>
-            <div class="card-rate-note" style="color:#059669;font-weight:500;">PM-quoted · incl. fees</div>
-          </div>
-        </a>
-      </template>
-    </div>
-  </div>
-
   <!-- Flatpickr date range picker -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
   <!-- Alpine.js -->
@@ -791,6 +788,7 @@
   }
   function searchApp() {
     return {
+      searchMode: new URLSearchParams(location.search).get("mode") === "flexible" ? "flexible" : "exact",
       filters: {
         checkin: nextSaturday(),
         checkout: addDays(nextSaturday(), 7),
@@ -801,6 +799,12 @@
         poiId: "", radiusMi: 10,
         maxRate: "",
         saveThreshold: 300,
+      },
+      flex: {
+        from: addDays(localDateStr(new Date()), 7),
+        to:   addDays(localDateStr(new Date()), 90),
+        minNights: 3,
+        maxNights: 7,
       },
       sort: "price_asc",
       todayStr: localDateStr(new Date()),
@@ -853,6 +857,50 @@
         this._fp?.open();
       },
 
+      setMode(mode) {
+        this.searchMode = mode;
+        const url = new URL(location.href);
+        if (mode === 'flexible') { url.searchParams.set('mode', 'flexible'); }
+        else { url.searchParams.delete('mode'); }
+        history.replaceState(null, '', url.toString());
+        if (mode === 'flexible') this.doFlexSearch();
+      },
+
+      async doFlexSearch() {
+        this.isFeaturedView = false;
+        this.loading = true;
+        this.splitPairs = null;
+        this.bothWeeks = null;
+        this.turnDaySuggestion = null;
+        const f = this.filters;
+        const fl = this.flex;
+        try {
+          const p = new URLSearchParams({ limit: 200 });
+          if (fl.from)        p.set("after",       fl.from);
+          if (fl.to)          p.set("before",      fl.to);
+          if (fl.minNights)   p.set("nights_min",  fl.minNights);
+          if (fl.maxNights)   p.set("nights_max",  fl.maxNights);
+          if (f.beds > 0)     p.set("beds",        f.beds);
+          if (f.community)    p.set("community",   f.community);
+          if (f.pool)         p.set("pool",        "true");
+          if (f.hotTub)       p.set("hot_tub",     "true");
+          if (f.pets)         p.set("pets",        "true");
+          if (f.oceanfront)   p.set("oceanfront",  "true");
+          if (f.oceanside)    p.set("oceanside",   "true");
+          if (f.soundfront)   p.set("soundfront",  "true");
+          if (f.maxRate > 0)  p.set("max_rate",    f.maxRate);
+          const data = await fetch(API + "/search/short-stays?" + p.toString()).then(r => r.json());
+          this.results = data.results || [];
+          this.total   = this.results.length;
+          this.queryMs = data.query_ms || 0;
+        } catch(e) {
+          this.results = [];
+          this.total   = 0;
+        }
+        this.loading = false;
+        this.$nextTick(() => this.syncMap());
+      },
+
       async loadFeatured() {
         try {
           const data = await fetch(API + "/featured").then(r => r.json());
@@ -901,6 +949,11 @@
           oceanfront: false, oceanside: false, soundfront: false,
           poiId: "", radiusMi: 10, maxRate: "",
           saveThreshold: 300,
+        };
+        this.flex = {
+          from: addDays(localDateStr(new Date()), 7),
+          to:   addDays(localDateStr(new Date()), 90),
+          minNights: 3, maxNights: 7,
         };
         this.activePoi = null;
         this.splitPairs = null;
@@ -1300,52 +1353,6 @@
     };
   }
 
-  function shortStayDiscovery() {
-    return {
-      results: [],
-      loading: false,
-      beds: 0,
-      community: "",
-      nightsMax: 6,
-
-      async load() {
-        this.loading = true;
-        const params = new URLSearchParams({
-          beds: this.beds,
-          nights_max: this.nightsMax,
-          limit: 24,
-        });
-        if (this.community) params.set("community", this.community);
-        try {
-          const data = await fetch(`${API}/search/short-stays?${params}`).then(r => r.json());
-          this.results = data.results || [];
-        } catch (e) {
-          this.results = [];
-        }
-        this.loading = false;
-      },
-
-      communityLabel(c) { return COMMUNITY_LABELS[c] || (c || "").replace(/_/g, " "); },
-
-      formatDateRange(checkin, checkout) {
-        if (!checkin) return "";
-        const opts = { month: "short", day: "numeric" };
-        const ci = new Date(checkin + "T00:00:00").toLocaleDateString("en-US", opts);
-        if (!checkout) return ci;
-        const co = new Date(checkout + "T00:00:00").toLocaleDateString("en-US", opts);
-        return `${ci} – ${co}`;
-      },
-
-      trackClick(r) {
-        try {
-          navigator.sendBeacon(TRACKER, JSON.stringify({
-            property_id: r.property_id, pmc: r.pmc,
-            source: "short_stay_discovery",
-          }));
-        } catch (e) {}
-      },
-    };
-  }
   </script>
 <footer style="text-align:center;padding:2rem 1rem 3rem;font-size:0.85rem;color:var(--muted);">
   <a href="https://obx.deals/" style="color:var(--muted);text-decoration:none;">OBX Deals</a>
