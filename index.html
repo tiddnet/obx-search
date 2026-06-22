@@ -866,11 +866,12 @@
         if (mode === 'flexible') { url.searchParams.set('mode', 'flexible'); }
         else { url.searchParams.delete('mode'); }
         history.replaceState(null, '', url.toString());
-        if (mode === 'flexible') { this.sort = 'date_asc'; this.doFlexSearch(); }
-        else if (mode === 'exact') { this.sort = 'price_asc'; }
+        if (mode === 'flexible') this.doFlexSearch();
+        else if (mode === 'exact') this.sort = 'price_asc';
       },
 
       async doFlexSearch() {
+        this.sort = 'date_asc';
         this.isFeaturedView = false;
         this.loading = true;
         this.splitPairs = null;
