@@ -514,7 +514,7 @@
         <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
           <template x-if="searchMode === 'exact' && filters.checkin && filters.checkout">
             <button
-              @click="watchModal = true; watchDone = false; watchError = ''; watchEmail = '';"
+              @click="watchType='search'; watchPropertyId=''; watchDone=false; watchError=''; watchEmail=''; watchModal=true;"
               style="padding:0.3rem 0.65rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-size:0.82rem;color:var(--ink);cursor:pointer;white-space:nowrap;"
               title="Get an email when prices drop for this search">
               🔔 Price alert
@@ -559,7 +559,7 @@
             <div style="margin-top:0.75rem">
               <button class="nudge-btn"
                 style="background:var(--accent);color:#fff;border:none;"
-                @click="watchModal = true; watchDone = false; watchError = ''; watchEmail = '';">
+                @click="watchType='availability'; watchPropertyId=''; watchDone=false; watchError=''; watchEmail=''; watchModal=true;">
                 🔔 Alert me if anything opens up
               </button>
             </div>
@@ -663,6 +663,11 @@
             </template>
             <button class="zoom-btn" @click.prevent.stop="zoomTo(r)"
               x-show="r.latitude && r.longitude" title="Zoom map to this property">📍 Map</button>
+            <button class="zoom-btn" @click.prevent.stop="
+                watchType='property'; watchPropertyId=r.property_id; watchPropertyName=r.property_name;
+                watchDone=false; watchError=''; watchEmail=''; watchModal=true;"
+              x-show="filters.checkin && filters.checkout"
+              title="Watch this property for a price drop">🔔 Watch price</button>
           </div>
         </a>
       </template>
@@ -738,10 +743,27 @@
       <div style="background:var(--bg);border-radius:10px;padding:1.75rem 1.5rem;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.22);">
         <template x-if="!watchDone">
           <div>
-            <h2 style="margin:0 0 0.3rem;font-size:1.15rem;">🔔 Price drop alert</h2>
+            <h2 style="margin:0 0 0.3rem;font-size:1.15rem;"
+              x-text="watchType === 'property' ? '🔔 Watch ' + watchPropertyName
+                     : watchType === 'availability' ? '🔔 Alert me if anything opens up'
+                     : '🔔 Price drop alert'"></h2>
             <p style="margin:0 0 1rem;font-size:0.875rem;color:var(--muted);">
-              We'll email you when a matching rental drops into your budget for
-              <strong x-text="formatDate(filters.checkin) + ' – ' + formatDate(filters.checkout)"></strong>.
+              <template x-if="watchType === 'property'">
+                <span>We'll email you when this property drops its rate for
+                  <strong x-text="formatDate(filters.checkin) + ' – ' + formatDate(filters.checkout)"></strong>.
+                </span>
+              </template>
+              <template x-if="watchType === 'availability'">
+                <span>We'll email you as soon as any matching property opens up for
+                  <strong x-text="formatDate(filters.checkin) + ' – ' + formatDate(filters.checkout)"></strong>.
+                  One alert, then done.
+                </span>
+              </template>
+              <template x-if="watchType === 'search'">
+                <span>We'll email you when a matching rental drops into your budget for
+                  <strong x-text="formatDate(filters.checkin) + ' – ' + formatDate(filters.checkout)"></strong>.
+                </span>
+              </template>
             </p>
             <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.3rem;">Email</label>
             <input
@@ -753,16 +775,21 @@
             <template x-if="watchError">
               <p x-text="watchError" style="color:#c0392b;font-size:0.82rem;margin:0 0 0.5rem;"></p>
             </template>
-            <p style="font-size:0.75rem;color:var(--muted);margin:0 0 1rem;">
-              You'll only be alerted when prices drop for
-              <span x-text="
-                [filters.beds > 0 ? filters.beds + '+ BR' : '',
-                 filters.community ? communityLabel(filters.community) : '',
-                 filters.maxRate > 0 ? 'under $' + Number(filters.maxRate).toLocaleString() + '/wk' : '']
-                .filter(Boolean).join(', ') || 'any matching property'
-              "></span>.
-              One-click cancel included.
-            </p>
+            <template x-if="watchType === 'search'">
+              <p style="font-size:0.75rem;color:var(--muted);margin:0 0 1rem;">
+                You'll only be alerted when prices drop for
+                <span x-text="
+                  [filters.beds > 0 ? filters.beds + '+ BR' : '',
+                   filters.community ? communityLabel(filters.community) : '',
+                   filters.maxRate > 0 ? 'under $' + Number(filters.maxRate).toLocaleString() + '/wk' : '']
+                  .filter(Boolean).join(', ') || 'any matching property'
+                "></span>.
+                One-click cancel included.
+              </p>
+            </template>
+            <template x-if="watchType !== 'search'">
+              <p style="font-size:0.75rem;color:var(--muted);margin:0 0 1rem;">One-click cancel included.</p>
+            </template>
             <div style="display:flex;gap:0.6rem;">
               <button
                 @click="submitWatch()"
@@ -782,8 +809,10 @@
           <div style="text-align:center;padding:0.5rem 0;">
             <div style="font-size:2rem;margin-bottom:0.5rem;">✅</div>
             <h2 style="margin:0 0 0.5rem;font-size:1.1rem;">Alert set!</h2>
-            <p style="font-size:0.875rem;color:var(--muted);margin:0 0 1.25rem;">
-              Check your inbox for a confirmation. We'll email you when prices drop.
+            <p style="font-size:0.875rem;color:var(--muted);margin:0 0 1.25rem;"
+              x-text="watchType === 'availability'
+                ? 'Check your inbox for a confirmation. We\'ll email you when something opens up.'
+                : 'Check your inbox for a confirmation. We\'ll email you when prices drop.'">
             </p>
             <button @click="watchModal = false"
               style="padding:0.5rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;">
@@ -915,6 +944,9 @@
       watchSubmitting: false,
       watchDone: false,
       watchError: "",
+      watchType: "search",
+      watchPropertyId: "",
+      watchPropertyName: "",
       get stayNights() {
         if (!this.filters.checkin || !this.filters.checkout) return 7;
         const n = Math.round(
@@ -1509,10 +1541,14 @@
         this.watchError = "";
         this.watchSubmitting = true;
         const f = this.filters;
-        const payload = { email, checkin: f.checkin, checkout: f.checkout };
-        if (f.beds > 0)    payload.beds      = f.beds;
-        if (f.community)   payload.community = f.community;
-        if (f.maxRate > 0) payload.max_rate  = f.maxRate;
+        const payload = { email, checkin: f.checkin, checkout: f.checkout, watch_type: this.watchType };
+        if (this.watchType === 'property' && this.watchPropertyId) {
+          payload.property_id = this.watchPropertyId;
+        } else {
+          if (f.beds > 0)    payload.beds      = f.beds;
+          if (f.community)   payload.community = f.community;
+          if (this.watchType !== 'availability' && f.maxRate > 0) payload.max_rate = f.maxRate;
+        }
         try {
           const res = await fetch("https://track.obx.deals/watch", {
             method: "POST",
