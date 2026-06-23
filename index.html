@@ -781,6 +781,14 @@
             <template x-if="watchError">
               <p x-text="watchError" style="color:#c0392b;font-size:0.82rem;margin:0 0 0.5rem;"></p>
             </template>
+            <template x-if="watchType !== 'availability'">
+              <div style="margin-bottom:0.75rem;">
+                <label style="font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+                  <input type="checkbox" :checked="watchDigest==='weekly'" @change="watchDigest = $event.target.checked ? 'weekly' : 'immediate'">
+                  Weekly digest (one email per Sunday instead of instant alerts)
+                </label>
+              </div>
+            </template>
             <template x-if="watchType === 'search'">
               <p style="font-size:0.75rem;color:var(--muted);margin:0 0 1rem;">
                 You'll only be alerted when prices drop for
@@ -1023,6 +1031,7 @@
       todayStr: localDateStr(new Date()),
       watchModal: false,
       watchEmail: "",
+      watchDigest: "immediate",
       watchSubmitting: false,
       watchDone: false,
       watchError: "",
@@ -1630,6 +1639,7 @@
         this.watchSubmitting = true;
         const f = this.filters;
         const payload = { email, checkin: f.checkin, checkout: f.checkout, watch_type: this.watchType };
+        if (this.watchType !== 'availability') payload.digest = this.watchDigest;
         if (this.watchType === 'property' && this.watchPropertyId) {
           payload.property_id = this.watchPropertyId;
         } else {
