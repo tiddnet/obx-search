@@ -479,6 +479,12 @@
         <span x-show="!loading">Search</span>
         <span x-show="loading"><span class="spinner"></span></span>
       </button>
+      <template x-if="filters.beds > 0 || filters.community || filters.maxRate > 0 || filters.pool || filters.pets || filters.oceanfront || filters.oceanside || filters.soundfront || filters.hotTub">
+        <button class="search-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);margin-top:0.4rem;"
+          @click="saveSearchDone=false; saveSearchError=''; saveSearchEmail=''; saveSearchModal=true;">
+          🔔 Save this search
+        </button>
+      </template>
       <a class="clear-link" @click="resetFilters()">Clear filters</a>
     </aside>
 
@@ -555,7 +561,7 @@
           <template x-if="!turnDaySuggestion">
             <div style="margin-top:0.4rem;font-size:0.82rem">Try fewer filters or different dates.</div>
           </template>
-          <template x-if="filters.checkin && filters.checkout">
+          <template x-if="searchMode === 'exact' && filters.checkin && filters.checkout">
             <div style="margin-top:0.75rem">
               <button class="nudge-btn"
                 style="background:var(--accent);color:#fff;border:none;"
@@ -666,7 +672,7 @@
             <button class="zoom-btn" @click.prevent.stop="
                 watchType='property'; watchPropertyId=r.property_id; watchPropertyName=r.property_name;
                 watchDone=false; watchError=''; watchEmail=''; watchModal=true;"
-              x-show="filters.checkin && filters.checkout"
+              x-show="searchMode === 'exact' && filters.checkin && filters.checkout"
               title="Watch this property for a price drop">🔔 Watch price</button>
           </div>
         </a>
@@ -824,6 +830,82 @@
     </div>
   </template>
 
+  <!-- ── SAVE SEARCH MODAL (ADR 0155) ─────────────────────────────────── -->
+  <template x-teleport="body">
+    <div
+      x-show="saveSearchModal"
+      x-transition.opacity
+      @click.self="saveSearchModal = false"
+      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;">
+      <div style="background:var(--bg);border-radius:10px;padding:1.75rem 1.5rem;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.22);">
+        <template x-if="!saveSearchDone">
+          <div>
+            <h2 style="margin:0 0 0.3rem;font-size:1.15rem;">🔔 Save this search</h2>
+            <p style="margin:0 0 0.75rem;font-size:0.875rem;color:var(--muted);">
+              We'll email you when rentals matching your criteria are available.
+            </p>
+            <p style="margin:0 0 1rem;font-size:0.82rem;background:var(--rule);border-radius:5px;padding:0.5rem 0.65rem;">
+              <span x-text="
+                [filters.beds > 0 ? filters.beds + '+ BR' : '',
+                 filters.oceanfront ? 'Oceanfront' : filters.oceanside ? 'Oceanside' : filters.soundfront ? 'Soundfront' : '',
+                 filters.community ? communityLabel(filters.community) : '',
+                 filters.maxRate > 0 ? 'under $' + Number(filters.maxRate).toLocaleString() + '/wk' : '',
+                 filters.pool ? 'Pool' : '',
+                 filters.pets ? 'Pets ok' : '']
+                .filter(Boolean).join(' · ') || 'Any property'
+              "></span>
+            </p>
+            <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.3rem;">Email</label>
+            <input
+              x-model="saveSearchEmail"
+              type="email"
+              placeholder="you@example.com"
+              @keydown.enter="submitSaveSearch()"
+              style="width:100%;box-sizing:border-box;padding:0.5rem 0.65rem;border:1px solid var(--rule);border-radius:6px;font-size:0.9rem;background:var(--bg);color:var(--ink);margin-bottom:0.65rem;">
+            <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.3rem;">Alert time</label>
+            <select x-model="saveSearchTz"
+              style="width:100%;padding:0.45rem 0.65rem;border:1px solid var(--rule);border-radius:6px;font-size:0.9rem;background:var(--bg);color:var(--ink);margin-bottom:0.5rem;">
+              <option value="America/New_York">9 AM Eastern</option>
+              <option value="America/Los_Angeles">9 AM Pacific</option>
+            </select>
+            <template x-if="saveSearchError">
+              <p x-text="saveSearchError" style="color:#c0392b;font-size:0.82rem;margin:0 0 0.5rem;"></p>
+            </template>
+            <p style="font-size:0.75rem;color:var(--muted);margin:0 0 1rem;">
+              Alerts fire when matching inventory exists. One-click cancel in every email.
+            </p>
+            <div style="display:flex;gap:0.6rem;">
+              <button
+                @click="submitSaveSearch()"
+                :disabled="saveSearchSubmitting"
+                style="flex:1;padding:0.55rem;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+                <span x-text="saveSearchSubmitting ? 'Saving…' : 'Save search'"></span>
+              </button>
+              <button
+                @click="saveSearchModal = false"
+                style="padding:0.55rem 1rem;background:transparent;border:1px solid var(--rule);border-radius:6px;font-size:0.9rem;cursor:pointer;color:var(--ink);">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </template>
+        <template x-if="saveSearchDone">
+          <div style="text-align:center;padding:0.5rem 0;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">✅</div>
+            <h2 style="margin:0 0 0.5rem;font-size:1.1rem;">Search saved!</h2>
+            <p style="font-size:0.875rem;color:var(--muted);margin:0 0 1.25rem;">
+              Check your inbox for a confirmation. We'll email you when matching rentals are available.
+            </p>
+            <button @click="saveSearchModal = false"
+              style="padding:0.5rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;">
+              Done
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+
   <!-- Flatpickr date range picker -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
   <!-- Alpine.js -->
@@ -947,6 +1029,12 @@
       watchType: "search",
       watchPropertyId: "",
       watchPropertyName: "",
+      saveSearchModal: false,
+      saveSearchEmail: "",
+      saveSearchTz: "America/New_York",
+      saveSearchSubmitting: false,
+      saveSearchDone: false,
+      saveSearchError: "",
       get stayNights() {
         if (!this.filters.checkin || !this.filters.checkout) return 7;
         const n = Math.round(
@@ -1565,6 +1653,43 @@
           this.watchError = "Network error. Please try again.";
         } finally {
           this.watchSubmitting = false;
+        }
+      },
+
+      async submitSaveSearch() {
+        const email = (this.saveSearchEmail || "").trim().toLowerCase();
+        if (!email || !/^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{2,}$/.test(email)) {
+          this.saveSearchError = "Please enter a valid email address.";
+          return;
+        }
+        this.saveSearchError = "";
+        this.saveSearchSubmitting = true;
+        const f = this.filters;
+        const payload = { email, delivery_tz: this.saveSearchTz };
+        if (f.beds > 0)        payload.beds         = f.beds;
+        if (f.community)       payload.community    = f.community;
+        if (f.oceanfront)      payload.view_type    = "oceanfront";
+        else if (f.oceanside)  payload.view_type    = "oceanside";
+        else if (f.soundfront) payload.view_type    = "soundfront";
+        if (f.maxRate > 0)     payload.max_rate     = f.maxRate;
+        if (f.pool)            payload.has_pool     = true;
+        if (f.pets)            payload.pet_friendly = true;
+        try {
+          const res = await fetch("https://track.obx.deals/save-search", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            this.saveSearchDone = true;
+          } else {
+            const text = await res.text();
+            this.saveSearchError = text || "Something went wrong. Please try again.";
+          }
+        } catch {
+          this.saveSearchError = "Network error. Please try again.";
+        } finally {
+          this.saveSearchSubmitting = false;
         }
       },
     };
