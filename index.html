@@ -459,6 +459,14 @@
         </div>
       </div>
 
+      <div class="filter-section">
+        <label class="filter-label">Solar view</label>
+        <div class="toggles">
+          <button class="toggle-btn" :class="filters.sunriseView && 'on'" @click="filters.sunriseView = !filters.sunriseView" title="Sunrise visible from this property on this week's check-in date">🌅 Sunrise view</button>
+          <button class="toggle-btn" :class="filters.sunsetView && 'on'" @click="filters.sunsetView = !filters.sunsetView" title="Sunset visible from this property on this week's check-in date">🌇 Sunset view</button>
+        </div>
+      </div>
+
       <!-- POI filter -->
       <div class="filter-section">
         <label class="filter-label">Near attraction</label>
@@ -1027,6 +1035,7 @@
         community: "",
         pool: false, hotTub: false, pets: false, elevator: false,
         oceanfront: false, oceanside: false, soundfront: false,
+        sunriseView: false, sunsetView: false,
         poiId: "", radiusMi: 10,
         maxRate: "",
         saveThreshold: 300,
@@ -1136,6 +1145,8 @@
           if (f.oceanfront)   p.set("oceanfront",  "true");
           if (f.oceanside)    p.set("oceanside",   "true");
           if (f.soundfront)   p.set("soundfront",  "true");
+          if (f.sunriseView)  p.set("sunrise_view", "true");
+          if (f.sunsetView)   p.set("sunset_view",  "true");
           if (f.maxRate > 0)  p.set("max_rate",    f.maxRate);
           const data = await fetch(API + "/search/short-stays?" + p.toString()).then(r => r.json());
           this.results = data.results || [];
@@ -1198,6 +1209,7 @@
           beds: 0, community: "",
           pool: false, hotTub: false, pets: false, elevator: false,
           oceanfront: false, oceanside: false, soundfront: false,
+          sunriseView: false, sunsetView: false,
           poiId: "", radiusMi: 10, maxRate: "",
           saveThreshold: 300,
         };
@@ -1237,6 +1249,8 @@
         if (f.oceanfront)  p.set("oceanfront", "true");
         if (f.oceanside)   p.set("oceanside", "true");
         if (f.soundfront)  p.set("soundfront", "true");
+        if (f.sunriseView) p.set("sunrise_view", "true");
+        if (f.sunsetView)  p.set("sunset_view", "true");
         if (f.poiId)       p.set("poi_id", f.poiId);
         if (f.radiusMi > 0 && f.poiId) p.set("poi_radius_mi", f.radiusMi);
         if (f.maxRate > 0) p.set("max_rate", f.maxRate);
