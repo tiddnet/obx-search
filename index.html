@@ -1171,7 +1171,7 @@
           this.trackSearch(0);
         }
         this.loading = false;
-        this.$nextTick(() => { if (typeof this.syncMap === 'function') this.syncMap(); });
+        this.$nextTick(() => this.renderMarkers());
       },
 
       async loadFeatured() {
@@ -1182,7 +1182,7 @@
             this.results = this.featuredResults;
             this.total   = this.featuredResults.length;
             this.isFeaturedView = true;
-            this.$nextTick(() => { if (typeof this.syncMap === 'function') this.syncMap(); });
+            this.$nextTick(() => this.renderMarkers());
           }
         } catch(e) { /* silent — search still works */ }
       },
