@@ -456,6 +456,7 @@
           <button class="toggle-btn" :class="filters.oceanfront && 'on'" @click="filters.oceanfront = !filters.oceanfront">🌊 Oceanfront</button>
           <button class="toggle-btn" :class="filters.oceanside && 'on'" @click="filters.oceanside = !filters.oceanside">🏖️ Oceanside</button>
           <button class="toggle-btn" :class="filters.soundfront && 'on'" @click="filters.soundfront = !filters.soundfront">⛵ Soundfront</button>
+          <button class="toggle-btn" :class="filters.windSports && 'on'" @click="filters.windSports = !filters.windSports">🪁 Wind Sports Home</button>
         </div>
       </div>
 
@@ -497,7 +498,7 @@
         <span x-show="!loading">Search</span>
         <span x-show="loading"><span class="spinner"></span></span>
       </button>
-      <template x-if="filters.beds > 0 || filters.community || filters.maxRate > 0 || filters.pool || filters.pets || filters.oceanfront || filters.oceanside || filters.soundfront || filters.hotTub">
+      <template x-if="filters.beds > 0 || filters.community || filters.maxRate > 0 || filters.pool || filters.pets || filters.oceanfront || filters.oceanside || filters.soundfront || filters.windSports || filters.hotTub">
         <button class="search-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);margin-top:0.4rem;"
           @click="saveSearchDone=false; saveSearchError=''; saveSearchEmail=''; saveSearchModal=true;">
           🔔 Save this search
@@ -633,6 +634,14 @@
               <template x-if="r.verified_view">
                 <span class="badge" style="background:#f0fdf4;color:#15803d;font-weight:600"
                   title="GIS sight-line analysis independently confirms ocean view quality — verified against satellite imagery and terrain data">✓ View verified</span>
+              </template>
+              <template x-if="r.verified_sound">
+                <span class="badge" style="background:#f0f9ff;color:#0369a1;font-weight:600"
+                  title="GIS sight-line analysis independently confirms sound view quality — verified against satellite imagery and terrain data">✓ Sound verified</span>
+              </template>
+              <template x-if="r.wind_sports_home">
+                <span class="badge" style="background:#f0fdfa;color:#0d9488;font-weight:600"
+                  title="Premier wind-sports water access — sits in a GIS-classified kiteboarding/windsurfing launch corridor">🪁 Wind Sports Home</span>
               </template>
               <template x-if="r.has_pool"><span class="badge" title="Property has a pool">🏊 Pool</span></template>
               <template x-if="r.has_hot_tub"><span class="badge" title="Property has a hot tub">♨️ Hot tub</span></template>
@@ -874,6 +883,7 @@
               <span x-text="
                 [filters.beds > 0 ? filters.beds + '+ BR' : '',
                  filters.oceanfront ? 'Oceanfront' : filters.oceanside ? 'Oceanside' : filters.soundfront ? 'Soundfront' : '',
+                 filters.windSports ? 'Wind Sports Home' : '',
                  filters.community ? communityLabel(filters.community) : '',
                  filters.maxRate > 0 ? 'under $' + Number(filters.maxRate).toLocaleString() + '/wk' : '',
                  filters.pool ? 'Pool' : '',
@@ -1034,7 +1044,7 @@
         beds: 0,
         community: "",
         pool: false, hotTub: false, pets: false, elevator: false,
-        oceanfront: false, oceanside: false, soundfront: false,
+        oceanfront: false, oceanside: false, soundfront: false, windSports: false,
         sunriseView: false, sunsetView: false,
         poiId: "", radiusMi: 10,
         maxRate: "",
@@ -1145,6 +1155,7 @@
           if (f.oceanfront)   p.set("oceanfront",  "true");
           if (f.oceanside)    p.set("oceanside",   "true");
           if (f.soundfront)   p.set("soundfront",  "true");
+          if (f.windSports)   p.set("wind_sports", "true");
           if (f.sunriseView)  p.set("sunrise_view", "true");
           if (f.sunsetView)   p.set("sunset_view",  "true");
           if (f.maxRate > 0)  p.set("max_rate",    f.maxRate);
@@ -1208,7 +1219,7 @@
           checkin: sat, checkout: addDays(sat, 7),
           beds: 0, community: "",
           pool: false, hotTub: false, pets: false, elevator: false,
-          oceanfront: false, oceanside: false, soundfront: false,
+          oceanfront: false, oceanside: false, soundfront: false, windSports: false,
           sunriseView: false, sunsetView: false,
           poiId: "", radiusMi: 10, maxRate: "",
           saveThreshold: 300,
@@ -1249,6 +1260,7 @@
         if (f.oceanfront)  p.set("oceanfront", "true");
         if (f.oceanside)   p.set("oceanside", "true");
         if (f.soundfront)  p.set("soundfront", "true");
+        if (f.windSports)  p.set("wind_sports", "true");
         if (f.sunriseView) p.set("sunrise_view", "true");
         if (f.sunsetView)  p.set("sunset_view", "true");
         if (f.poiId)       p.set("poi_id", f.poiId);
