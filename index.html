@@ -701,6 +701,8 @@
                 watchDone=false; watchError=''; watchEmail=''; watchModal=true;"
               x-show="searchMode === 'exact' && filters.checkin && filters.checkout"
               title="Watch this property for a price drop">🔔 Watch price</button>
+            <button class="zoom-btn" @click.prevent.stop="window.open(r.canonical_url, '_blank')"
+              x-show="r.canonical_url" title="View property profile — stable page that survives PM transitions">ⓘ Profile</button>
           </div>
         </a>
       </template>
