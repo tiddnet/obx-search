@@ -1103,6 +1103,7 @@
       popup: null,
 
       init() {
+        this.trackPageview();
         this.loadPois();
         this.loadFeatured();
         this._fp = flatpickr("#fp-date-range", {
@@ -1619,6 +1620,21 @@
       },
 
       // ── TRACKING ─────────────────────────────────────────────────────
+
+      trackPageview() {
+        if (!navigator.sendBeacon || IS_INTERNAL) return;
+        if (navigator.doNotTrack === '1' || window.doNotTrack === '1') return;
+        if (sessionStorage.getItem('obxd_pv')) return;
+        sessionStorage.setItem('obxd_pv', '1');
+        const payload = JSON.stringify({
+          event_type: "pageview",
+          visitor_id: VISITOR_ID,
+          url: location.href,
+          page_path: location.pathname,
+          referrer: document.referrer || null,
+        });
+        navigator.sendBeacon(TRACKER, new Blob([payload], { type: "application/json" }));
+      },
 
       trackClick(r) {
         if (!navigator.sendBeacon || IS_INTERNAL) return;
