@@ -562,7 +562,14 @@
 
     <!-- ── RESULTS LIST ────────────────────────────────────────────── -->
     <div class="results-list" @scroll="onListScroll($event)">
-      <template x-if="results !== null && results.length === 0">
+      <template x-if="searchError">
+        <div class="empty-state">
+          <div class="icon">⚠️</div>
+          <div>Search is temporarily unavailable.</div>
+          <div style="margin-top:0.4rem;font-size:0.82rem">Please try again in a moment.</div>
+        </div>
+      </template>
+      <template x-if="!searchError && results !== null && results.length === 0">
         <div class="empty-state">
           <div class="icon">🏖️</div>
           <div>No results for these filters.</div>
@@ -1089,6 +1096,7 @@
       total: 0,
       queryMs: 0,
       loading: false,
+      searchError: false,
       splitPairs: null,
       bothWeeks: null,
       turnDaySuggestion: null,
@@ -1139,6 +1147,7 @@
         this.sort = 'date_asc';
         this.isFeaturedView = false;
         this.loading = true;
+        this.searchError = false;
         this.splitPairs = null;
         this.bothWeeks = null;
         this.turnDaySuggestion = null;
@@ -1162,7 +1171,9 @@
           if (f.sunriseView)  p.set("sunrise_view", "true");
           if (f.sunsetView)   p.set("sunset_view",  "true");
           if (f.maxRate > 0)  p.set("max_rate",    f.maxRate);
-          const data = await fetch(API + "/search/short-stays?" + p.toString()).then(r => r.json());
+          const r = await fetch(API + "/search/short-stays?" + p.toString());
+          if (!r.ok) throw new Error("search API error: " + r.status);
+          const data = await r.json();
           this.results = data.results || [];
           this.total   = this.results.length;
           this.queryMs = data.query_ms || 0;
@@ -1171,6 +1182,7 @@
         } catch(e) {
           this.results = [];
           this.total   = 0;
+          this.searchError = true;
           this.trackSearch(0);
         }
         this.loading = false;
@@ -1275,6 +1287,7 @@
       async doSearch() {
         this.isFeaturedView = false;
         this.loading = true;
+        this.searchError = false;
         this.splitPairs = null;
         this.bothWeeks = null;
         this.turnDaySuggestion = null;
@@ -1292,6 +1305,7 @@
 
           if (checkins.length === 1) {
             const r = await fetch(this.buildUrl());
+            if (!r.ok) throw new Error("search API error: " + r.status);
             const data = await r.json();
             // Server-side min_stay filter applied when checkout passed; client gate
             // is kept as a fallback for single-week calls without a checkout param.
@@ -1303,7 +1317,10 @@
             this.sortResults();
           } else {
             const responses = await Promise.all(
-              checkins.map(c => fetch(this.buildUrl(c)).then(r => r.json()))
+              checkins.map(c => fetch(this.buildUrl(c)).then(r => {
+                if (!r.ok) throw new Error("search API error: " + r.status);
+                return r.json();
+              }))
             );
             this.queryMs = Math.max(...responses.map(d => d.query_ms || 0));
             this.computeMultiWeekResults(responses.map(d => d.results || []), nights);
@@ -1312,6 +1329,7 @@
           this.$nextTick(() => this.renderMarkers());
         } catch (e) {
           this.results = [];
+          this.searchError = true;
           this.trackSearch(0);
         } finally {
           this.loading = false;
