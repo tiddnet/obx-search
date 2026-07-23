@@ -1093,6 +1093,7 @@
       results: null,
       featuredResults: null,
       isFeaturedView: false,
+      searchStarted: false,
       total: 0,
       queryMs: 0,
       loading: false,
@@ -1146,6 +1147,7 @@
       async doFlexSearch() {
         this.sort = 'date_asc';
         this.isFeaturedView = false;
+        this.searchStarted = true;
         this.loading = true;
         this.searchError = false;
         this.splitPairs = null;
@@ -1192,6 +1194,7 @@
       async loadFeatured() {
         try {
           const data = await fetch(API + "/featured").then(r => r.json());
+          if (this.searchStarted) return; // user already searched while this was in flight
           this.featuredResults = data.results || [];
           if (this.featuredResults.length) {
             this.results = this.featuredResults;
@@ -1286,6 +1289,7 @@
 
       async doSearch() {
         this.isFeaturedView = false;
+        this.searchStarted = true;
         this.loading = true;
         this.searchError = false;
         this.splitPairs = null;
