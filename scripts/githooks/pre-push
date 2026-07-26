@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Thin trampoline (ADR 0242, reusing rental-intel ADR 0165's pattern). This
+# file lives in .git/hooks/ which is NOT tracked by git -- install once per
+# machine via `make install-hooks`. Real logic lives in
+# scripts/post_push_smoke.sh (tracked, edit that instead of this file).
+#
+# Git has no native "post-push" hook. pre-push is the closest real
+# mechanism -- it fires client-side after the push is prepared but BEFORE
+# objects transfer, and a non-zero exit here blocks the push entirely. To
+# avoid that (and to avoid making every `git push` wait through a 45s
+# GitHub Pages propagation sleep), this hook launches the real worker
+# fully detached -- nohup + disown + redirected stdin -- and returns
+# immediately, exactly like rental-intel's post-commit trampoline.
+#
+# Only fires the smoke-test worker when the push updates refs/heads/main
+# (the only ref that triggers a GitHub Pages deploy for this repo) --
+# pushes of feature/scratch branches are a no-op here.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+LOG_DIR="$REPO_ROOT/logs"
+mkdir -p "$LOG_DIR"
+
+MAIN_SHA=""
+while read -r local_ref local_sha remote_ref remote_sha; do
+    if [ "$remote_ref" = "refs/heads/main" ]; then
+        MAIN_SHA="$local_sha"
+    fi
+done
+
+if [ -z "$MAIN_SHA" ]; then
+    # Not pushing to main -- no GitHub Pages deploy triggered here.
+    exit 0
+fi
+
+TS="$(date -u +%Y%m%dT%H%M%SZ)"
+LOG_FILE="$LOG_DIR/post_push_${TS}.log"
+
+nohup "$REPO_ROOT/scripts/post_push_smoke.sh" "$MAIN_SHA" > "$LOG_FILE" 2>&1 < /dev/null &
+disown
+
+ln -sf "$LOG_FILE" "$LOG_DIR/post_push_latest.log"
+
+echo "pre-push: main push detected ($MAIN_SHA) -- post-deploy smoke test launched detached."
+echo "pre-push: check logs/post_push_latest.log or logs/post_push_latest.json for status in ~45s+."
+exit 0

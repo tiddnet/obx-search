@@ -55,5 +55,15 @@ https://search.obx.deals/?env=staging
 ### Visitor identity
 
 A UUID cookie (`obxd_vid`) is set on first visit, shared across `.obx.deals` subdomains (`max-age=1yr`). This is the `visitor_id` on all beacon events. The same cookie is used by obx.deals and owners.obx.deals for cross-site visitor correlation.
+
+### Post-deploy smoke test (ADR 0242, rental-intel)
+
+A `pre-push` git hook fires the live smoke test (`rental-intel/scripts/test_search_site.py`) against `search.obx.deals` after any push that updates `main` — detached from `git push` itself, so the push returns immediately. It waits ~45s for GitHub Pages propagation, then runs the check and emails an SES alert (`[post-deploy] obx-search smoke test failed after push`) on failure. Status: `logs/post_push_latest.log` / `logs/post_push_latest.json` (gitignored).
+
+One-time install per machine:
+```bash
+make install-hooks
+```
+Real logic lives in `scripts/post_push_smoke.sh` (tracked) — edit that, not `.git/hooks/pre-push` (untracked, installed from `scripts/githooks/pre-push`).
 </content>
 </invoke>
