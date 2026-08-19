@@ -612,6 +612,10 @@
             <div class="card-name" x-text="r.property_name"></div>
             <div class="card-meta" x-text="bedsLabel(r) + ' · ' + viewLabel(r)"></div>
             <div class="card-badges">
+              <template x-if="poiDistanceLabel(r)">
+                <span class="badge" style="background:#f5f0ff;color:#6b21a8"
+                  x-text="'📍 ' + poiDistanceLabel(r)"></span>
+              </template>
               <template x-if="r.fair_price_label === 'great_deal' || r.fair_price_label === 'good_deal'">
                 <span class="badge deal" title="Priced meaningfully below comparable properties this week — strong value relative to the market">🔥 Great deal</span>
               </template>
@@ -1422,6 +1426,32 @@
         const r1 = pair.week1, r2 = pair.week2;
         if (!r1.latitude || !r1.longitude || !r2.latitude || !r2.longitude) return null;
         return this.haversineMiles(+r1.latitude, +r1.longitude, +r2.latitude, +r2.longitude);
+      },
+
+      // Per-result "X.X mi to <POI>" badge when a POI category/specific POI
+      // is active. The radius filter (poi_id/poi_radius_mi) already narrows
+      // results server-side, but nothing showed the actual distance for any
+      // given result -- this reuses the same haversineMiles() the group-stay
+      // "houses apart" feature already relies on.
+      nearestPoiFor(r) {
+        if (!r.latitude || !r.longitude) return null;
+        if (this.filters.poiId) {
+          return this.pois.find(p => p.id === this.filters.poiId) || null;
+        }
+        if (!this.activePoi) return null;
+        let best = null, bestDist = Infinity;
+        for (const p of this.filteredPois) {
+          const d = this.haversineMiles(+r.latitude, +r.longitude, p.lat, p.lon);
+          if (d < bestDist) { bestDist = d; best = p; }
+        }
+        return best;
+      },
+
+      poiDistanceLabel(r) {
+        const poi = this.nearestPoiFor(r);
+        if (!poi) return null;
+        const d = this.haversineMiles(+r.latitude, +r.longitude, poi.lat, poi.lon);
+        return d.toFixed(1) + ' mi to ' + poi.name;
       },
 
       zoomToPair(pair) {
