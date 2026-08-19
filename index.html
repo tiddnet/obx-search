@@ -350,7 +350,32 @@
       <div class="mode-toggle">
         <button :class="searchMode === 'exact' && 'active'" @click="setMode('exact')">Exact dates</button>
         <button :class="searchMode === 'flexible' && 'active'" @click="setMode('flexible')">Flexible dates</button>
-        <button :class="searchMode === 'group' && 'active'" @click="setMode('group')">Group stay</button>
+      </div>
+
+      <!-- Group stay (ADR 0266) -- orthogonal to the exact/flexible date
+           mode, not a third mode: it changes WHAT gets searched (packages
+           of houses instead of single properties) using whichever date
+           model (exact or flexible) is already active, rather than
+           duplicating a whole separate date UI. -->
+      <div class="filter-section">
+        <label class="filter-label" style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+          <input type="checkbox" x-model="group.enabled" @change="onGroupToggle()">
+          👥 Group stay (multiple houses)
+        </label>
+      </div>
+      <div x-show="group.enabled">
+        <div class="filter-section">
+          <label class="filter-label">Total guests</label>
+          <input type="number" x-model.number="group.guests" min="1" max="200"
+                 @change="runCurrentSearch()" placeholder="e.g. 20">
+        </div>
+        <div class="filter-section">
+          <label class="filter-label">Houses within</label>
+          <div class="radius-row">
+            <input type="range" x-model.number="group.radiusMi" min="1" max="30" step="1" @change="runCurrentSearch()">
+            <span x-text="group.radiusMi + ' mi of each other'"></span>
+          </div>
+        </div>
       </div>
 
       <!-- Exact dates -->
@@ -390,38 +415,7 @@
         </div>
       </div>
 
-      <!-- Group stay (ADR 0266) -->
-      <div x-show="searchMode === 'group'">
-        <div class="filter-section">
-          <label class="filter-label">
-            Dates
-            <span x-text="'· ' + stayNights + ' night' + (stayNights !== 1 ? 's' : '')"
-                  style="font-weight:400;opacity:0.65;margin-left:0.35rem;font-size:0.85em"></span>
-          </label>
-          <div style="position:relative" @click="openDatePicker()">
-            <div class="fp-date-display"
-                 x-text="filters.checkin && filters.checkout
-                   ? formatDate(filters.checkin) + ' – ' + formatDate(filters.checkout)
-                   : 'Select dates'"></div>
-            <input id="fp-date-range" type="text" readonly
-                   style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;pointer-events:none">
-          </div>
-        </div>
-        <div class="filter-section">
-          <label class="filter-label">Total guests</label>
-          <input type="number" x-model.number="group.guests" min="1" max="200"
-                 @change="doGroupSearch()" placeholder="e.g. 20">
-        </div>
-        <div class="filter-section">
-          <label class="filter-label">Houses within</label>
-          <div class="radius-row">
-            <input type="range" x-model.number="group.radiusMi" min="1" max="30" step="1" @change="doGroupSearch()">
-            <span x-text="group.radiusMi + ' mi of each other'"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="filter-section" x-show="stayNights >= 14 && searchMode !== 'group'">
+      <div class="filter-section" x-show="stayNights >= 14 && !group.enabled">
         <label class="filter-label">Show split stays saving more than</label>
         <input type="number" x-model.number="filters.saveThreshold" min="0" step="50" placeholder="300">
       </div>
@@ -526,7 +520,7 @@
         </template>
       </div>
 
-      <button class="search-btn" @click="searchMode === 'flexible' ? doFlexSearch() : (searchMode === 'group' ? doGroupSearch() : doSearch())" :disabled="loading">
+      <button class="search-btn" @click="runCurrentSearch()" :disabled="loading">
         <span x-show="!loading">Search</span>
         <span x-show="loading"><span class="spinner"></span></span>
       </button>
@@ -540,7 +534,7 @@
     </aside>
 
     <!-- ── RESULTS HEADER ──────────────────────────────────────────── -->
-    <div class="results-header" x-show="searchMode !== 'group'">
+    <div class="results-header" x-show="!group.enabled">
       <template x-if="!loading && results !== null && isFeaturedView">
         <span style="color:var(--muted);font-size:.9rem">✦ Featured properties — search above to explore all 8,500+</span>
       </template>
@@ -593,7 +587,7 @@
     </div>
 
     <!-- ── RESULTS LIST ────────────────────────────────────────────── -->
-    <div class="results-list" @scroll="onListScroll($event)" x-show="searchMode !== 'group'">
+    <div class="results-list" @scroll="onListScroll($event)" x-show="!group.enabled">
       <template x-if="searchError">
         <div class="empty-state">
           <div class="icon">⚠️</div>
@@ -799,7 +793,7 @@
     </div>
 
     <!-- ── GROUP STAY (ADR 0266) ───────────────────────────────────── -->
-    <div class="results-header" x-show="searchMode === 'group'">
+    <div class="results-header" x-show="group.enabled">
       <template x-if="!loading && groupPackages !== null">
         <span>
           <strong x-text="groupPackages.length"></strong>
@@ -810,7 +804,7 @@
       <template x-if="loading"><span><span class="spinner"></span> Searching…</span></template>
       <template x-if="!loading && groupPackages === null"><span>Enter total guests and search</span></template>
     </div>
-    <div class="results-list" x-show="searchMode === 'group'">
+    <div class="results-list" x-show="group.enabled">
       <template x-if="searchError">
         <div class="empty-state">
           <div class="icon">⚠️</div>
@@ -828,7 +822,8 @@
       <template x-for="(pkg, pi) in groupPackages || []" :key="'pkg-' + pi">
         <div class="card-pair" @mouseenter="highlightGroupPackage(pkg)" @mouseleave="unhighlightGroupPackage(pkg)">
           <div class="card-pair-header">
-            <span x-text="pkg.n_houses + ' houses · sleeps ' + pkg.total_occ"></span>
+            <span x-text="pkg.n_houses + ' houses · sleeps ' + pkg.total_occ
+              + (searchMode === 'flexible' && pkg.week_of ? ' · ' + formatDate(pkg.week_of) : '')"></span>
             <div class="card-pair-meta">
               <span x-text="'$' + Math.round(pkg.total_cost).toLocaleString() + ' total'"></span>
               <span x-show="pkg.savings !== null && pkg.savings > 0"
@@ -1141,10 +1136,7 @@
   }
   function searchApp() {
     return {
-      searchMode: (() => {
-        const m = new URLSearchParams(location.search).get("mode");
-        return (m === "flexible" || m === "group") ? m : "exact";
-      })(),
+      searchMode: new URLSearchParams(location.search).get("mode") === "flexible" ? "flexible" : "exact",
       filters: {
         checkin: nextSaturday(),
         checkout: addDays(nextSaturday(), 7),
@@ -1164,6 +1156,7 @@
         maxNights: 7,
       },
       group: {
+        enabled: new URLSearchParams(location.search).get("group") === "1",
         guests: 20,
         radiusMi: 10,
       },
@@ -1240,12 +1233,27 @@
       setMode(mode) {
         this.searchMode = mode;
         const url = new URL(location.href);
-        if (mode === 'flexible' || mode === 'group') { url.searchParams.set('mode', mode); }
+        if (mode === 'flexible') { url.searchParams.set('mode', 'flexible'); }
         else { url.searchParams.delete('mode'); }
         history.replaceState(null, '', url.toString());
-        if (mode === 'flexible') this.doFlexSearch();
-        else if (mode === 'group') { if (this.filters.checkin) this.doGroupSearch(); }
-        else if (mode === 'exact') this.sort = 'price_asc';
+        if (mode === 'flexible') this.runCurrentSearch();
+        else if (mode === 'exact' && !this.group.enabled) this.sort = 'price_asc';
+      },
+
+      onGroupToggle() {
+        const url = new URL(location.href);
+        if (this.group.enabled) { url.searchParams.set('group', '1'); }
+        else { url.searchParams.delete('group'); }
+        history.replaceState(null, '', url.toString());
+        this.runCurrentSearch();
+      },
+
+      // Central dispatcher: group.enabled picks package search over the
+      // normal per-property search, independent of which date mode
+      // (exact/flexible) is active -- ADR 0266 follow-up.
+      runCurrentSearch() {
+        if (this.group.enabled) return this.doGroupSearch();
+        return this.searchMode === 'flexible' ? this.doFlexSearch() : this.doSearch();
       },
 
       async doFlexSearch() {
@@ -1296,10 +1304,13 @@
       },
 
       async doGroupSearch() {
-        // ADR 0266 — multi-house packages for a group too large for one
-        // property. Separate from `results` (a flat property list) since
-        // a package is several houses at once; renderMarkers() flattens
-        // groupPackages back out for the map.
+        // ADR 0266 (+ flexible-window follow-up) — multi-house packages
+        // for a group too large for one property. Separate from `results`
+        // (a flat property list) since a package is several houses at
+        // once; renderMarkers() flattens groupPackages back out for the
+        // map. Uses whichever date model (exact/flexible) is active --
+        // same flex.from/flex.to state Flexible mode already has, no
+        // separate group-specific date UI.
         this.isFeaturedView = false;
         this.searchStarted = true;
         this.loading = true;
@@ -1313,7 +1324,13 @@
         }
         try {
           const p = new URLSearchParams({ guests: g.guests, radius_mi: g.radiusMi });
-          if (f.checkin)   p.set("checkin",            f.checkin);
+          if (this.searchMode === 'flexible') {
+            const fl = this.flex;
+            if (fl.from) p.set("after",  fl.from);
+            if (fl.to)   p.set("before", fl.to);
+          } else if (f.checkin) {
+            p.set("checkin", f.checkin);
+          }
           if (f.community) p.set("community",          f.community);
           if (f.beds > 0)  p.set("min_beds_per_house", f.beds);
           const r = await fetch(API + "/search/group-stay?" + p.toString());
@@ -1733,7 +1750,7 @@
 
         // For multi-week stays, also pin split-pair-only properties (grayed)
         let allProps = [...(this.results || [])];
-        if (this.searchMode === 'group' && this.groupPackages) {
+        if (this.group.enabled && this.groupPackages) {
           const seen = new Set(allProps.map(r => r.property_id));
           for (const pkg of this.groupPackages) {
             for (const house of pkg.props) {
