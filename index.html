@@ -1268,7 +1268,7 @@
         const f = this.filters;
         const fl = this.flex;
         try {
-          const p = new URLSearchParams({ limit: 500 });
+          const p = new URLSearchParams({ limit: 100 });  // 500 cards took ~6-8 s to render (rental-intel ADR 0472)
           if (fl.from)        p.set("after",       fl.from);
           if (fl.to)          p.set("before",      fl.to);
           if (fl.minNights)   p.set("nights_min",  fl.minNights);
