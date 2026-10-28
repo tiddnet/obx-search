@@ -206,6 +206,7 @@
     .badge.deal  { background: #fef2f0; color: var(--save); }
     .badge.fair  { background: #f0f7ee; color: #2d6e1e; }
     .badge.above { background: #fafafa; color: var(--muted); }
+    .badge.sponsored { background: #fff8e1; color: #7a5b00; border: 1px solid #f0d78c; font-weight: 600; }
     .card-rate {
       font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem; color: var(--ink);
     }
@@ -638,6 +639,9 @@
             <div class="card-name" x-text="r.property_name"></div>
             <div class="card-meta" x-text="bedsLabel(r) + ' · ' + viewLabel(r)"></div>
             <div class="card-badges">
+              <template x-if="r.sponsored">
+                <span class="badge sponsored" title="Sponsored — the owner subscribes to OBX Owner Hub. Shown first when it matches your search.">Sponsored</span>
+              </template>
               <template x-if="poiDistanceLabel(r)">
                 <span class="badge" style="background:#f5f0ff;color:#6b21a8"
                   x-text="'📍 ' + poiDistanceLabel(r)"></span>
@@ -1596,7 +1600,10 @@
           beds_asc:   (a, b) => (a.bedrooms || 0) - (b.bedrooms || 0),
           beds_desc:  (a, b) => (b.bedrooms || 0) - (a.bedrooms || 0),
         };
-        this.results = [...this.results].sort(fns[this.sort] || fns.price_asc);
+        // Sponsored rows (rental-intel ADR 0473) stay on top in every sort;
+        // Array.sort is stable, so each group keeps the chosen order.
+        this.results = [...this.results].sort(fns[this.sort] || fns.price_asc)
+          .sort((a, b) => (b.sponsored ? 1 : 0) - (a.sponsored ? 1 : 0));
       },
 
       haversineMiles(lat1, lon1, lat2, lon2) {
