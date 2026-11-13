@@ -228,6 +228,16 @@
       margin-bottom: 0.25rem; flex-shrink: 0;
     }
 
+    /* ── TOWN CARD (rental-intel ADR 0510) ───────────────────────────── */
+    .town-card {
+      border: 1px solid var(--rule); border-radius: 8px; background: var(--bg);
+      padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; font-size: 0.85rem; flex-shrink: 0;
+    }
+    .town-card summary { cursor: pointer; font-weight: 600; list-style-position: inside; }
+    .town-card .town-tagline { font-weight: 400; color: var(--muted); }
+    .town-card p { margin: 0.45rem 0 0; line-height: 1.45; }
+    .town-card a { font-weight: 600; }
+
     /* ── SPLIT-STAY PAIR CARDS ───────────────────────────────────────── */
     .card-pair {
       border: 1px solid var(--rule); border-radius: var(--radius);
@@ -624,6 +634,19 @@
             </div>
           </template>
         </div>
+      </template>
+      <template x-if="townCard && !isFeaturedView">
+        <details class="town-card" :open="townCardOpen" @toggle="townCardOpen = $el.open">
+          <summary>
+            <span x-text="'About ' + townCard.name"></span>
+            <span class="town-tagline" x-text="' · ' + townCard.tagline"></span>
+          </summary>
+          <p><strong>Best for:</strong> <span x-text="townCard.best_for.join(' · ')"></span></p>
+          <p x-text="townCard.access"></p>
+          <p><a :href="townCard.url" target="_blank" rel="noopener"
+                @click="trackClick({ url: townCard.url, property_id: 'town-card:' + townCard.key })"
+                x-text="'Read the ' + townCard.name + ' guide →'"></a></p>
+        </details>
       </template>
       <template x-for="(r, i) in results || []" :key="searchMode === 'flexible' ? r.property_id + '_' + (r.week_of || '') + '_' + i : r.property_id">
         <a class="card" :class="activeId === r.property_id && 'active'"
@@ -1193,6 +1216,8 @@
       results: null,
       featuredResults: null,
       isFeaturedView: false,
+      townCards: {},        // town-cards.json, written by rental-intel's guide generator
+      townCardOpen: true,
       searchStarted: false,
       total: 0,
       queryMs: 0,
@@ -1215,6 +1240,7 @@
         this.trackPageview();
         this.loadPois();
         this.loadFeatured();
+        this.loadTownCards();
         this._fp = flatpickr("#fp-date-range", {
           mode: "range",
           minDate: "today",
@@ -1884,6 +1910,31 @@
           referrer: document.referrer || null,
         });
         navigator.sendBeacon(TRACKER, new Blob([payload], { type: "application/json" }));
+      },
+
+      loadTownCards() {
+        fetch("town-cards.json").then(r => r.ok ? r.json() : {}).then(d => { this.townCards = d || {}; }).catch(() => {});
+      },
+
+      // The town to describe above the results: the selected Area, or the
+      // town that holds more than 60% of the results (subdivisions count
+      // toward their town). Null for a mixed result set.
+      get townCard() {
+        const rows = this.results || [];
+        if (!rows.length) return null;
+        let key = this.filters.community;
+        if (!key) {
+          const counts = {};
+          for (const r of rows) {
+            const c = this.townCards[r.community];
+            if (c) counts[c.url] = (counts[c.url] || 0) + 1;
+          }
+          const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+          if (!top || top[1] / rows.length <= 0.6) return null;
+          key = Object.keys(this.townCards).find(k => this.townCards[k].url === top[0]);
+        }
+        const card = this.townCards[key];
+        return card ? { ...card, key } : null;
       },
 
       trackClick(r) {
