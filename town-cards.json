@@ -1,0 +1,222 @@
+{
+ "corolla": {
+  "name": "Corolla",
+  "tagline": "Big houses, wide beaches, and the road runs out here.",
+  "best_for": [
+   "Large multi-family groups",
+   "Big-house amenities (pools, game rooms)",
+   "Lighthouse and wild-horse day trips"
+  ],
+  "access": "The paved road ends at the north end of Corolla — everything beyond (Carova) is 4WD beach driving only. The Currituck Beach Lighthouse is here and climbable in season.",
+  "url": "https://guide.obx.deals/corolla/"
+ },
+ "ocean_sands_q": {
+  "name": "Corolla",
+  "tagline": "Big houses, wide beaches, and the road runs out here.",
+  "best_for": [
+   "Large multi-family groups",
+   "Big-house amenities (pools, game rooms)",
+   "Lighthouse and wild-horse day trips"
+  ],
+  "access": "The paved road ends at the north end of Corolla — everything beyond (Carova) is 4WD beach driving only. The Currituck Beach Lighthouse is here and climbable in season.",
+  "url": "https://guide.obx.deals/corolla/"
+ },
+ "duck": {
+  "name": "Duck",
+  "tagline": "The one OBX town you can actually walk.",
+  "best_for": [
+   "Families wanting walkability",
+   "Food and shopping without driving",
+   "A more polished, low-key vibe"
+  ],
+  "access": "Duck's town center is genuinely walkable — a soundfront boardwalk connects shops and restaurants, which is rare on the Outer Banks.",
+  "url": "https://guide.obx.deals/duck/"
+ },
+ "southern_shores": {
+  "name": "Southern Shores",
+  "tagline": "The quiet one — residential by design, and it shows.",
+  "best_for": [
+   "Families wanting peace and quiet",
+   "Repeat visitors who've outgrown the crowds",
+   "Central location without the commercial strip"
+  ],
+  "access": "Southern Shores sits at the foot of the Wright Memorial Bridge — it's the first town you reach coming onto the northern beaches, which makes changeover-day arrivals easier than the towns farther north.",
+  "url": "https://guide.obx.deals/southern-shores/"
+ },
+ "kitty_hawk": {
+  "name": "Kitty Hawk",
+  "tagline": "Central, practical, and the best value on the northern beaches.",
+  "best_for": [
+   "Value-focused families",
+   "Smaller groups",
+   "A central base for exploring the whole OBX"
+  ],
+  "access": "The Wright brothers' first flight is named for Kitty Hawk because of the weather station that handled their telegrams — the actual flight site and memorial are just south in what's now Kill Devil Hills.",
+  "url": "https://guide.obx.deals/kitty-hawk/"
+ },
+ "carova": {
+  "name": "Carova",
+  "tagline": "No pavement, no shops, wild horses in the yard.",
+  "best_for": [
+   "Groups wanting true seclusion",
+   "Wild-horse encounters",
+   "People who find beach driving part of the fun"
+  ],
+  "access": "4WD is required for all access — there is no paved road into Carova; you drive the beach north from the end of NC-12 in Corolla, and rental agreements assume it.",
+  "url": "https://guide.obx.deals/carova/"
+ },
+ "kill_devil_hills": {
+  "name": "Kill Devil Hills",
+  "tagline": "Where flight started, and where everything on the OBX is close.",
+  "best_for": [
+   "First-time OBX visitors",
+   "Families who want restaurants and groceries close",
+   "Mid-size groups (3–5BR)"
+  ],
+  "access": "The Wright Brothers National Memorial — site of the first powered flight in 1903 — sits in the middle of town, and the monument hill is visible from much of the bypass.",
+  "url": "https://guide.obx.deals/kill-devil-hills/"
+ },
+ "nags_head": {
+  "name": "Nags Head",
+  "tagline": "The classic OBX beach town, from old cottages to big group houses.",
+  "best_for": [
+   "Large group and multi-family stays",
+   "Travelers who want the traditional OBX feel",
+   "Widest choice of house sizes"
+  ],
+  "access": "Jockey's Ridge State Park protects the tallest natural sand dune system on the East Coast, and it's free to enter and climb.",
+  "url": "https://guide.obx.deals/nags-head/"
+ },
+ "south_nags_head": {
+  "name": "South Nags Head",
+  "tagline": "Nags Head's quiet end — beach houses, few storefronts, open road south.",
+  "best_for": [
+   "Quiet, residential beach weeks",
+   "Repeat visitors who know what they want",
+   "Couples and smaller families"
+  ],
+  "access": "South Nags Head ends at Oregon Inlet, the crossing point to Hatteras Island — day trips down Hatteras start closer here than from anywhere else in the central OBX.",
+  "url": "https://guide.obx.deals/south-nags-head/"
+ },
+ "rodanthe": {
+  "name": "Rodanthe",
+  "tagline": "First stop past the bridge, and it feels like it.",
+  "best_for": [
+   "Surf-focused trips",
+   "Fishing weeks",
+   "Couples and mid-size families"
+  ],
+  "access": "The Marc Basnight Bridge over Oregon Inlet is the only road onto Hatteras Island — every drive down starts with that crossing.",
+  "url": "https://guide.obx.deals/rodanthe/"
+ },
+ "waves": {
+  "name": "Waves",
+  "tagline": "The tri-villages' quiet middle, with wind on the sound side.",
+  "best_for": [
+   "Kiteboarders and windsurfers",
+   "Larger family groups",
+   "Multi-family trips"
+  ],
+  "access": "Waves has no hard boundary with its neighbors — you'll pass through Rodanthe on NC-12 to get here, and Salvo starts before you notice Waves ended.",
+  "url": "https://guide.obx.deals/waves/"
+ },
+ "salvo": {
+  "name": "Salvo",
+  "tagline": "Southernmost, smallest, and quietest of the tri-villages.",
+  "best_for": [
+   "Total quiet",
+   "Families who self-cater",
+   "Beach-and-book vacations"
+  ],
+  "access": "South of Salvo, NC-12 runs through miles of national seashore with no development until Avon — the emptiest stretch of road on the island.",
+  "url": "https://guide.obx.deals/salvo/"
+ },
+ "avon": {
+  "name": "Avon",
+  "tagline": "Hatteras Island's practical home base.",
+  "best_for": [
+   "First Hatteras trips",
+   "Families wanting amenities",
+   "Longer stays"
+  ],
+  "access": "Avon has the only full-size grocery store on this stretch of the island — a real logistical advantage over the tri-villages to the north.",
+  "url": "https://guide.obx.deals/avon/"
+ },
+ "island_creek": {
+  "name": "Avon",
+  "tagline": "Hatteras Island's practical home base.",
+  "best_for": [
+   "First Hatteras trips",
+   "Families wanting amenities",
+   "Longer stays"
+  ],
+  "access": "Avon has the only full-size grocery store on this stretch of the island — a real logistical advantage over the tri-villages to the north.",
+  "url": "https://guide.obx.deals/avon/"
+ },
+ "kinnakeet_shores": {
+  "name": "Avon",
+  "tagline": "Hatteras Island's practical home base.",
+  "best_for": [
+   "First Hatteras trips",
+   "Families wanting amenities",
+   "Longer stays"
+  ],
+  "access": "Avon has the only full-size grocery store on this stretch of the island — a real logistical advantage over the tri-villages to the north.",
+  "url": "https://guide.obx.deals/avon/"
+ },
+ "buxton": {
+  "name": "Buxton",
+  "tagline": "The lighthouse, the point, and the best-known surf on the island.",
+  "best_for": [
+   "Surfers",
+   "Kiteboarders and windsurfers",
+   "Couples"
+  ],
+  "access": "The Cape Hatteras Lighthouse is in Buxton, inside Cape Hatteras National Seashore — the island's most-visited landmark.",
+  "url": "https://guide.obx.deals/buxton/"
+ },
+ "frisco": {
+  "name": "Frisco",
+  "tagline": "Buxton's quieter neighbor, one village further down.",
+  "best_for": [
+   "Quiet stays near Buxton's attractions",
+   "Small families",
+   "Value seekers"
+  ],
+  "access": "Frisco puts you within a few miles of both Canadian Hole and the Cape Hatteras Lighthouse — close to the action without being in it.",
+  "url": "https://guide.obx.deals/frisco/"
+ },
+ "hatteras_village": {
+  "name": "Hatteras Village",
+  "tagline": "The end of the road — literally.",
+  "best_for": [
+   "Fishing and charter trips",
+   "Ocracoke day trips",
+   "Remote-feel seekers"
+  ],
+  "access": "The free NC-operated Hatteras–Ocracoke ferry departs from the village — about a 70-minute crossing, no reservation needed, on a seasonal schedule.",
+  "url": "https://guide.obx.deals/hatteras-village/"
+ },
+ "manteo": {
+  "name": "Manteo",
+  "tagline": "The Outer Banks town that isn't on the banks.",
+  "best_for": [
+   "Couples and small families who want a real town",
+   "A downtown you can walk, a harbor, history within reach",
+   "Shoulder-season travelers"
+  ],
+  "access": "Reached via US-64 across the Virginia Dare Memorial Bridge — a separate approach from the NC-12 beach corridor. Nags Head is roughly a 10-minute drive east.",
+  "url": "https://guide.obx.deals/manteo/"
+ },
+ "ocracoke": {
+  "name": "Ocracoke",
+  "tagline": "The island you can only reach by boat.",
+  "best_for": [
+   "People who want the trip itself to be the point",
+   "A real island, a walkable village, beaches with room to spread out",
+   "Return visitors who've outgrown the busier towns"
+  ],
+  "access": "Free ferry from the south end of Hatteras Island (about 70 minutes), or longer toll ferries from Swan Quarter and Cedar Island on the mainland. Check schedules before you book your arrival day.",
+  "url": "https://guide.obx.deals/ocracoke/"
+ }
+}
